@@ -1,0 +1,11 @@
+{
+  "network": "amoy",
+  "timestamp": "2026-03-26T00:00:00.000Z",
+  "deployer": "0xc303f423d1C82a16A05E68507F39bE0e15aA3877",
+  "userRegistry": {
+    "address": "0x28757AD7b10440627fA7798B6589C73f133F9020",
+    "name": "UserRegistry",
+    "version": "3.0.0",
+    "features": ["passwordHashVerification", "secp256k1Support", "crossDeviceSignin"]
+  }
+}

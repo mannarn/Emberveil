@@ -1,0 +1,398 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { ethers } from 'ethers';
+import { ed25519 } from '@noble/curves/ed25519';
+import { randomBytes } from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const CONTRACT_ADDRESS = "0x614A4148d1BeD71b3634Fa18b7f0D4CFD491322A";
+const RPC_URL          = "https://rpc-amoy.polygon.technology";
+const RELAY_PRIVATE_KEY = process.env.RELAY_PRIVATE_KEY;
+const JWT_SECRET        = process.env.JWT_SECRET;
+
+const PORT              = process.env.PORT || 3001;
+const NONCE_TTL_MS      = 5 * 60 * 1000;                 // 5 minutes
+
+if (!RELAY_PRIVATE_KEY) throw new Error('RELAY_PRIVATE_KEY required in .env');
+if (!JWT_SECRET)        throw new Error('JWT_SECRET required in .env');
+
+// ── ABI ────────────────────────────────────────────────────────────────────────
+
+const artifactPath = path.join(__dirname, 'artifacts', 'contracts', 'UserRegistry.sol', 'UserRegistry.json');
+const artifactData = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
+const ABI = artifactData.abi;
+
+// ── Blockchain init ────────────────────────────────────────────────────────────
+
+let provider, signer, contract;
+
+async function initializeBlockchain() {
+  provider = new ethers.JsonRpcProvider(RPC_URL);
+  signer   = new ethers.Wallet(RELAY_PRIVATE_KEY, provider);
+  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+}
+
+// ── Nonce store (in-memory — swap for Redis in production) ─────────────────────
+// Map<username, { nonce: string, expiresAt: number }>
+
+const nonceStore = new Map();
+
+function generateNonce() {
+  return randomBytes(32).toString('hex'); // 64-char hex, cryptographically random
+}
+
+function clearExpiredNonces() {
+  const now = Date.now();
+  for (const [key, val] of nonceStore) { 
+    if (val.expiresAt < now) nonceStore.delete(key);
+  }
+}
+setInterval(clearExpiredNonces, 60_000);
+
+// ── Simple JWT (no library dependency) ────────────────────────────────────────
+// Uses Node's built-in crypto — HS256
+
+import { createHmac } from 'crypto';
+
+function base64url(input) {
+  return Buffer.from(input).toString('base64url');
+}
+
+function issueJWT(payload) {
+  const header  = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body    = base64url(JSON.stringify({ ...payload, iat: Math.floor(Date.now() / 1000) }));
+  const sig     = createHmac('sha256', JWT_SECRET).update(`${header}.${body}`).digest('base64url');
+  return `${header}.${body}.${sig}`;
+}
+
+function verifyJWT(token) {
+  try {
+    const [header, body, sig] = token.split('.');
+    const expected = createHmac('sha256', JWT_SECRET).update(`${header}.${body}`).digest('base64url');
+    if (sig !== expected) return null;
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// ── Middleware: auth guard ─────────────────────────────────────────────────────
+
+function requireAuth(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  const payload = verifyJWT(auth.slice(7));
+  if (!payload) return res.status(401).json({ error: 'Invalid or expired token' });
+  req.user = payload;
+  next();
+}
+
+// ── Routes ─────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/health
+ */
+app.get('/api/health', (req, res) => {
+  res.json({
+    status:      'ok',
+    relayWallet: signer?.address,
+    network:     'Polygon Amoy',
+    ready:       !!contract
+  });
+});
+
+/**
+ * GET /api/wallet-info
+ */
+app.get('/api/wallet-info', async (req, res) => {
+  try {
+    if (!provider || !signer) return res.status(503).json({ error: 'Blockchain not ready.' });
+    const balance = await provider.getBalance(signer.address);
+    res.json({ address: signer.address, balance: ethers.formatEther(balance) });
+  } catch (err) {
+    res.status(500).json({ error: 'Wallet info failed.' });
+  }
+});
+
+/**
+ * POST /api/check-username
+ * Body: { username }
+ */
+app.post('/api/check-username', async (req, res) => { //Also I need to check weater the user having valid tocken to call this api or not
+  try {
+    const { username } = req.body;
+    if (!username || typeof username !== 'string' || username.length < 2 || username.length > 32)
+      return res.status(400).json({ success: false, error: 'Username must be 2-32 characters.' });
+    if (!/^[a-z0-9_-]+$/i.test(username))
+      return res.status(400).json({ success: false, error: 'Invalid characters in username.' });
+    if (!contract)
+      return res.status(503).json({ success: false, error: 'Contract not initialized.' });
+
+    const clean     = username.toLowerCase();
+    const available = await contract.isUsernameAvailable(clean);
+    res.json({ success: true, available, username: clean });
+  } catch (err) {
+    console.error('check-username:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to check username.' });
+  }
+});
+
+/**
+ * POST /api/register-user
+ *
+ * Body: {
+ *   username,
+ *   didDocument,          // DID document JSON string or IPFS CID
+ *   ed25519PublicKey,     // 64 hex chars, no 0x prefix  (bytes 32-63 of PBKDF2 seed → Ed25519 pubkey)
+ *   passwordDoubleHash    // "0x" + keccak256(keccak256(PBKDF2-derived-bytes)) — 66 chars
+ * }
+ *
+ * CHANGED from original:
+ *   - Removed: secp256k1PublicKey (not stored on-chain anymore — EVM address is implicit)
+ *   - Renamed: passwordHash → passwordDoubleHash (double-hashed for extra protection)
+ *   - Added:   ed25519PublicKey (this is what we use for sign-in verification)
+ */
+app.post('/api/register-user', async (req, res) => {
+  try {
+    const { username, didDocument, ed25519PublicKey, passwordDoubleHash } = req.body;
+
+    if (!username || !didDocument || !ed25519PublicKey || !passwordDoubleHash)
+      return res.status(400).json({ error: 'Missing required fields: username, didDocument, ed25519PublicKey, passwordDoubleHash' });
+
+    if (username.length < 2 || username.length > 32)
+      return res.status(400).json({ error: 'Username must be 2-32 characters.' });
+    if (!/^[a-z0-9_-]+$/i.test(username))
+      return res.status(400).json({ error: 'Invalid username format.' });
+    if (ed25519PublicKey.length !== 64)
+      return res.status(400).json({ error: 'ed25519PublicKey must be 64 hex chars (no 0x prefix).' });
+    if (!/^[0-9a-fA-F]+$/.test(ed25519PublicKey))
+      return res.status(400).json({ error: 'ed25519PublicKey must be hex.' });
+    if (passwordDoubleHash.length !== 66 || !passwordDoubleHash.startsWith('0x'))
+      return res.status(400).json({ error: 'passwordDoubleHash must be 0x + 64 hex chars.' });
+
+    if (!contract)
+      return res.status(503).json({ error: 'Contract not initialized.' });
+
+    const clean     = username.toLowerCase();
+    const available = await contract.isUsernameAvailable(clean);
+    if (!available)
+      return res.status(409).json({ error: 'Username already taken.' });
+
+    console.log('⛽ Estimating gas...');
+    const gas      = await contract.registerUser.estimateGas(clean, didDocument, ed25519PublicKey, passwordDoubleHash);
+    const gasLimit = (BigInt(gas) * BigInt(120)) / BigInt(100);
+    const feeData  = await provider.getFeeData();
+    const gasPrice = feeData.gasPrice;
+    const totalCost = gasLimit * gasPrice;
+
+    console.log(`⛽ Gas estimate: ${gas} units, limit: ${gasLimit}, price: ${ethers.formatUnits(gasPrice, 'gwei')} gwei`);
+    console.log(`⛽ Total cost: ${ethers.formatEther(totalCost)} MATIC`);
+
+    const balance = await provider.getBalance(signer.address);
+    if (balance < totalCost)
+      return res.status(503).json({
+        error:     'Relay wallet has insufficient funds.',
+        needed:    ethers.formatEther(totalCost),
+        available: ethers.formatEther(balance)
+      });
+
+    const tx      = await contract.registerUser(clean, didDocument, ed25519PublicKey, passwordDoubleHash, { gasLimit });
+    const receipt = await tx.wait();
+
+    console.log(`✓ Registered ${clean} at tx ${receipt.hash}`);
+    res.status(201).json({
+      success:     true,
+      username:    clean,
+      txHash:      receipt.hash,
+      blockNumber: receipt.blockNumber
+    });
+  } catch (err) {
+    console.error('register-user:', err.message);
+    res.status(500).json({ error: err.message.includes('insufficient') ? 'Relay wallet has insufficient funds.' : 'Registration failed.' });
+  }
+});
+
+// ── Challenge-Response Sign-In ─────────────────────────────────────────────────
+
+/**
+ * POST /api/auth/request-nonce
+ *
+ * Step 1 of sign-in. Client asks server for a nonce to sign.
+ * Body: { username }
+ * Returns: { nonce }
+ *
+ * NEW ENDPOINT — no equivalent in original relay
+ */
+app.post('/api/auth/request-nonce', async (req, res) => { 
+  //What is this nonce is used for? 
+  //I think this is used to verify the user is having the private key or not.
+  //If the user is having the private key then only they can sign the nonce and send back to server for verification. So this is a challenge-response mechanism to verify the user's identity without sending password over the wire.
+  try {
+    const { username } = req.body;
+    if (!username || typeof username !== 'string')
+      return res.status(400).json({ error: 'username required' });
+
+    const clean = username.toLowerCase();
+
+    if (!contract)
+      return res.status(503).json({ error: 'Contract not initialized.' });
+
+    // Make sure user actually exists and is active
+    const exists = await contract.registeredUsernames(clean);
+    if (!exists)
+      return res.status(404).json({ error: 'User not found.' });
+
+    const active = await contract.isUserActive(clean);
+    if (!active)
+      return res.status(403).json({ error: 'Account is deactivated.' });
+
+    const nonce     = generateNonce();
+    const expiresAt = Date.now() + NONCE_TTL_MS;
+    nonceStore.set(clean, { nonce, expiresAt });
+
+    console.log(`🔑 Nonce issued for ${clean}: ${nonce.slice(0, 12)}...`);
+    res.json({ success: true, nonce });
+  } catch (err) {
+    console.error('request-nonce:', err.message);
+    res.status(500).json({ error: 'Failed to generate nonce.' });
+  }
+});
+
+/**
+ * POST /api/auth/verify-signature
+ *
+ * Step 2 of sign-in. Client sends back the nonce signed with their Ed25519 private key.
+ *
+ * Body: {
+ *   username,
+ *   signature   // hex string (128 hex chars = 64 bytes), no 0x prefix
+ * }
+ *
+ * Returns: { success, token }  — JWT valid for 24h
+ *
+ * CHANGED from original:
+ *   - Replaces /api/verify-credentials entirely
+ *   - Original sent passwordHash over the wire to the blockchain — insecure
+ *   - This sends only a signature of a one-time nonce — safe
+ */
+app.post('/api/auth/verify-signature', async (req, res) => {
+  try {
+    const { username, signature } = req.body;
+
+    if (!username || !signature)
+      return res.status(400).json({ error: 'username and signature required' });
+    if (typeof signature !== 'string' || signature.length !== 128)
+      return res.status(400).json({ error: 'signature must be 128 hex chars (64 bytes)' });
+
+    const clean = username.toLowerCase();
+
+    // 1. Get nonce from store
+    const record = nonceStore.get(clean);
+    if (!record)
+      return res.status(400).json({ error: 'No nonce found. Request a new one.' });
+    if (Date.now() > record.expiresAt) {
+      nonceStore.delete(clean);
+      return res.status(400).json({ error: 'Nonce expired. Request a new one.' });
+    }
+
+    // 2. Fetch public key from contract
+    if (!contract)
+      return res.status(503).json({ error: 'Contract not initialized.' });
+
+    const pubKeyHex = await contract.getEd25519PublicKey(clean);
+    if (!pubKeyHex)
+      return res.status(404).json({ error: 'Public key not found on chain.' });
+
+    // 3. Verify Ed25519 signature
+    //    Message = UTF-8 bytes of the nonce string
+    //    This must match exactly what the client signed
+    const pubKeyBytes  = Uint8Array.from(Buffer.from(pubKeyHex, 'hex'));        // 32 bytes
+    const sigBytes     = Uint8Array.from(Buffer.from(signature, 'hex'));         // 64 bytes
+    const messageBytes = new TextEncoder().encode(record.nonce);                 // nonce as UTF-8
+
+    let valid = false;
+    try {
+      valid = ed25519.verify(sigBytes, messageBytes, pubKeyBytes);
+    } catch {
+      valid = false;
+    }
+
+    // 4. Consume the nonce regardless of result (prevents replay)
+    nonceStore.delete(clean);
+
+    if (!valid) {
+      console.log(`✗ Sig verification failed for ${clean}`);
+      return res.status(401).json({ success: false, error: 'Invalid signature. Wrong password.' });
+    }
+
+    // 5. Issue JWT
+    const token = issueJWT({
+      username: clean,
+      exp: Math.floor(Date.now() / 1000) + 86400  // 24 hours
+    });
+
+    console.log(`✓ Signed in: ${clean}`);
+    res.json({ success: true, token, username: clean });
+  } catch (err) {
+    console.error('verify-signature:', err.message);
+    res.status(500).json({ error: 'Verification failed.' });
+  }
+});
+
+/**
+ * GET /api/profile/:username   (protected)
+ * Example of a protected route — requires JWT
+ */
+app.get('/api/profile/:username', requireAuth, async (req, res) => {
+  try {
+    const clean = req.params.username.toLowerCase();
+    if (req.user.username !== clean)
+      return res.status(403).json({ error: 'Forbidden' });
+
+    const profile = await contract.getUserProfile(clean);
+    res.json({
+      success:     true,
+      username:    clean,
+      did:         profile.didEmberveilDocument,
+      metadataCID: profile.metadataCID,
+      active:      profile.isActive,
+      registered:  Number(profile.registrationTime)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch profile.' });
+  }
+});
+
+// ── Error handler ──────────────────────────────────────────────────────────────
+
+app.use((err, req, res, _next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error.' });
+});
+
+// ── Start ──────────────────────────────────────────────────────────────────────
+
+async function startServer() {
+  try {
+    await initializeBlockchain();
+    app.listen(PORT, () => console.log(`\n✓ Relay running on http://localhost:${PORT}\n`));
+  } catch (err) {
+    console.error('Startup failed:', err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
+export default app;

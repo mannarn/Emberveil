@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emberveil — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ivory:        #faf8f3;
+      --cream:        #f4f0e8;
+      --parchment:    #ede7d9;
+      --sage:         #e6f0ea;
+      --sage2:        #c8ddd0;
+      --royal:        #1a3a8f;
+      --royal-mid:    #2d55c4;
+      --royal-light:  #dde6fb;
+      --royal-mist:   #eef2fd;
+      --gold:         #c49a3c;
+      --gold-light:   #f5e6c0;
+      --gold-pale:    #fdf6e3;
+      --rose:         #c0506a;
+      --rose-light:   #fce8ed;
+      --border:       #e2d9ce;
+      --border-soft:  #ede8e0;
+      --text:         #1e1a14;
+      --text-mid:     #4a4035;
+      --text-soft:    #8a7f72;
+      --text-muted:   #b5aca0;
+      --shadow-sm:    0 1px 4px rgba(26,58,143,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:       0 4px 20px rgba(26,58,143,.08), 0 1px 4px rgba(0,0,0,.05);
+      --shadow-lg:    0 12px 48px rgba(26,58,143,.13), 0 2px 8px rgba(0,0,0,.06);
+      --radius:       20px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--ivory);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Subtle background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(26,58,143,.035) 0%, transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(196,154,60,.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Pages ── */
+    .page { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 32px 20px; position: relative; z-index: 1; }
+    .page.active { display: flex; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 432px;
+      overflow: hidden;
+      position: relative;
+      animation: slideUp .45s cubic-bezier(.16,1,.3,1);
+    }
+
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(22px) }
+      to   { opacity:1; transform: translateY(0) }
+    }
+
+    /* Top accent stripe */
+    .card::before {
+      content: '';
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, var(--royal) 0%, var(--royal-mid) 55%, var(--gold) 100%);
+    }
+
+    /* ── Card header ── */
+    .card-header { padding: 34px 38px 0; text-align: center; }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon {
+      width: 40px; height: 40px;
+      background: var(--royal);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 20px;
+      box-shadow: 0 4px 14px rgba(26,58,143,.32);
+    }
+
+    .brand-name {
+      font-family: 'Fraunces', serif;
+      font-size: 21px;
+      font-weight: 500;
+      color: var(--royal);
+      letter-spacing: -.4px;
+    }
+
+    .card-title {
+      font-family: 'Fraunces', serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 7px;
+      letter-spacing: -.4px;
+      line-height: 1.2;
+    }
+
+    .card-sub {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text-soft);
+      margin-bottom: 30px;
+      line-height: 1.65;
+    }
+
+    /* ── Card body ── */
+    .card-body { padding: 0 38px 34px; }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 18px; }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-mid);
+      letter-spacing: .55px;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    .field label .req  { color: var(--rose); font-size: 9px; }
+    .field label .opt  { font-size: 10px; font-weight: 400; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
+
+    input[type=text], input[type=password] {
+      width: 100%;
+      background: var(--ivory);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    .has-prefix input { padding-left: 32px; }
+
+    input:focus {
+      background: #fff;
+      border-color: var(--royal-mid);
+      box-shadow: 0 0 0 3px rgba(45,85,196,.1);
+    }
+    input.input-err { border-color: var(--rose); }
+    input.input-err:focus { box-shadow: 0 0 0 3px rgba(192,80,106,.1); }
+    input.input-ok  { border-color: var(--sage2); }
+    input.input-ok:focus { box-shadow: 0 0 0 3px rgba(200,221,208,.4); }
+    input::placeholder { color: var(--text-muted); }
+
+    /* Password eye */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 42px; }
+    .eye-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 16px; padding: 2px;
+      transition: color .2s; line-height: 1;
+    }
+    .eye-btn:hover { color: var(--text-mid); }
+
+    /* Field messages */
+    .field-msg {
+      margin-top: 5px; font-size: 12px; min-height: 16px;
+      display: flex; align-items: center; gap: 4px;
+      color: transparent; transition: color .2s;
+    }
+    .field-msg.err  { color: var(--rose); }
+    .field-msg.ok   { color: #4a8c6a; }
+    .field-msg.hint { color: var(--text-muted); }
+
+    /* Security block */
+    .sq-block {
+      background: var(--royal-mist);
+      border: 1px solid var(--royal-light);
+      border-radius: 13px;
+      padding: 18px 18px 16px;
+      margin-bottom: 18px;
+    }
+
+    .sq-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--royal);
+      text-transform: uppercase;
+      letter-spacing: .55px;
+      margin-bottom: 10px;
+    }
+
+    .sq-label-icon {
+      width: 18px; height: 18px;
+      background: var(--royal); border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 9px;
+    }
+
+    .sq-note {
+      font-size: 11.5px;
+      font-weight: 300;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .sq-block .field { margin-bottom: 10px; }
+    .sq-block .field:last-child { margin-bottom: 0; }
+    .sq-block label { font-size: 10.5px; text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-mid); }
+    .sq-block input  { padding: 9px 13px; font-size: 13px; background: #fff; }
+
+    /* Strength */
+    .strength-wrap { margin-top: 7px; }
+    .strength-bar   { height: 3px; background: var(--border-soft); border-radius: 2px; overflow: hidden; }
+    .strength-fill  { height: 100%; border-radius: 2px; width: 0%; transition: width .4s, background-color .4s; }
+    .strength-row   { display: flex; justify-content: space-between; margin-top: 5px; }
+    .strength-label { font-size: 11px; color: var(--text-muted); }
+    .strength-text  { font-size: 11px; font-weight: 600; }
+
+    /* Username status badge */
+    .username-status {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 13px; opacity: 0; transition: opacity .2s;
+    }
+    .username-status.visible { opacity: 1; }
+
+    /* Buttons */
+    .btn {
+      width: 100%; padding: 13px;
+      border: none; border-radius: 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+      position: relative; letter-spacing: .1px;
+    }
+
+    .btn-primary {
+      background: var(--royal); color: #fff;
+      box-shadow: 0 4px 18px rgba(26,58,143,.3);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--royal-mid);
+      box-shadow: 0 7px 26px rgba(26,58,143,.38);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-mid);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--royal-light); color: var(--royal); background: var(--royal-mist); }
+
+    .btn.loading { color: transparent !important; pointer-events: none; }
+    .btn.loading::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      width: 18px; height: 18px; margin: -9px 0 0 -9px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .6s linear infinite;
+    }
+    .btn-ghost.loading::after {
+      border-color: rgba(0,0,0,.15); border-top-color: var(--royal);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    .card-footer { padding: 0 38px 30px; text-align: center; }
+    .divider-footer { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .divider-footer-line { flex: 1; height: 1px; background: var(--border-soft); }
+    .footer-text { font-size: 13px; color: var(--text-soft); margin-bottom: 10px; }
+    .link-btn {
+      background: none; border: none; color: var(--royal-mid);
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+      padding: 0; transition: color .2s;
+    }
+    .link-btn:hover { color: var(--royal); }
+
+    /* Alerts */
+    .alert {
+      display: none; padding: 11px 14px;
+      border-radius: 9px; font-size: 13px;
+      margin-bottom: 16px; line-height: 1.5;
+      animation: fadeIn .2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .alert.visible { display: flex; align-items: flex-start; gap: 9px; }
+    .alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .alert-err { background: var(--rose-light); border: 1px solid rgba(192,80,106,.2); color: #8b2a40; }
+    .alert-ok  { background: var(--sage);       border: 1px solid rgba(200,221,208,.6); color: #2a6644; }
+
+    /* Steps */
+    .steps-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-bottom: 24px;
+    }
+    .step-dot {
+      width: 27px; height: 27px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; transition: all .3s;
+    }
+    .step-dot.done   { background: var(--royal); color: #fff; box-shadow: 0 2px 8px rgba(26,58,143,.3); }
+    .step-dot.active { background: var(--royal-mist); color: var(--royal); border: 2px solid var(--royal-light); }
+    .step-dot.idle   { background: var(--cream); color: var(--text-muted); border: 1px solid var(--border); }
+    .step-line { flex: 1; max-width: 40px; height: 1px; background: var(--border); }
+    .step-line.done { background: var(--royal); }
+
+    /* Footer security note */
+    .security-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+    .security-note-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--sage2); flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================================================================
+     PAGE 1 — SIGN IN
+     ================================================================ -->
+  <div class="page active" id="page-signin">
+    <div class="card">
+      <div class="card-header">
+        <div class="brand">
+          <div class="brand-icon">𑀅</div>
+          <span class="brand-name">Emberveil</span>
+        </div>
+        <h1 class="card-title">Welcome back</h1>
+        <p class="card-sub">Sign in to your decentralised identity</p>
+      </div>
+
+      <div class="card-body">
+        <div class="alert alert-err" id="si-alert"><span class="alert-icon">⚠</span><span id="si-alert-text"></span></div>
+        <div class="alert alert-ok"  id="si-alert-ok"><span class="alert-icon">✓</span><span id="si-alert-ok-text"></span></div>
+
+        <div class="field">
+          <label>Username <span class="req">✦</span></label>
+          <div class="input-wrap has-prefix" style="position:relative">
+            <span class="prefix">@</span>
+            <input type="text" id="si-username" placeholder="yourhandle" autocomplete="username">
+          </div>
+          <div class="field-msg" id="si-username-msg"></div>
+        </div>
+
+        <div class="field">
+          <label>Password <span class="req">✦</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="si-password" placeholder="Your password" onkeydown="if(event.key==='Enter')handleSignin()">
+            <button class="eye-btn" onclick="togglePw('si-password',this)" tabindex="-1">👁</button>
+          </div>
+          <div class="field-msg" id="si-password-msg"></div>
+        </div>
+
+        <div class="sq-block">
+          <div class="sq-label"><div class="sq-label-icon">◈</div> Security Verification</div>
+          <p class="sq-note">Answer the same questions you set at signup — these reconstruct your key.</p>
+          <div class="field">
+            <label>Favourite pet name <span class="opt">— optional</span></label>
+            <input type="text" id="si-pet" placeholder="e.g. tommy" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>First job company <span class="opt">— optional</span></label>
+            <input type="text" id="si-job" placeholder="e.g. tcs" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Nickname at home <span class="opt">— optional</span></label>
+            <input type="text" id="si-nick" placeholder="e.g. manu" autocomplete="off">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-signin" onclick="handleSignin()">Sign In</button>
+      </div>
+
+      <div class="card-footer">
+        <div class="divider-footer">
+          <div class="divider-footer-line"></div>
+          <span style="font-size:11px;color:var(--text-muted)">New here?</span>
+          <div class="divider-footer-line"></div>
+        </div>
+        <p class="footer-text">Don't have an account yet?</p>
+        <button class="btn btn-ghost" onclick="goTo('page-signup')">Create Account</button>
+        <div class="security-note"><div class="security-note-dot"></div>Keys derived client-side — never sent to any server</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================================================================
+     PAGE 2 — SIGN UP
+     ================================================================ -->
+  <div class="page" id="page-signup">
+    <div class="card">
+      <div class="card-header">
+        <div class="brand">
+          <div class="brand-icon">𑀅</div>
+          <span class="brand-name">Emberveil</span>
+        </div>
+        <div class="steps-row">
+          <div class="step-dot active">1</div>
+          <div class="step-line"></div>
+          <div class="step-dot idle">2</div>
+        </div>
+        <h1 class="card-title">Create your identity</h1>
+        <p class="card-sub">Your keys are derived from your credentials — never stored plain</p>
+      </div>
+
+      <div class="card-body">
+        <div class="alert alert-err" id="su-alert"><span class="alert-icon">⚠</span><span id="su-alert-text"></span></div>
+
+        <div class="field">
+          <label>Username <span class="req">✦</span></label>
+          <div class="input-wrap has-prefix" style="position:relative">
+            <span class="prefix">@</span>
+            <input type="text" id="su-username" placeholder="yourhandle" oninput="suUsernameCheck(this)" autocomplete="username">
+            <span class="username-status" id="su-username-status"></span>
+          </div>
+          <div class="field-msg" id="su-username-msg"></div>
+        </div>
+
+        <div class="field">
+          <label>Password <span class="req">✦</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="su-password" placeholder="Min 8 chars, letter + number" oninput="onStrength(this)">
+            <button class="eye-btn" onclick="togglePw('su-password',this)" tabindex="-1">👁</button>
+          </div>
+          <div class="strength-wrap">
+            <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+            <div class="strength-row">
+              <span class="strength-label">Password strength</span>
+              <span class="strength-text" id="strength-text"></span>
+            </div>
+          </div>
+          <div class="field-msg" id="su-password-msg"></div>
+        </div>
+
+        <div class="field">
+          <label>Confirm Password <span class="req">✦</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="su-confirm" placeholder="Repeat your password" oninput="onConfirm(this)">
+            <button class="eye-btn" onclick="togglePw('su-confirm',this)" tabindex="-1">👁</button>
+          </div>
+          <div class="field-msg" id="su-confirm-msg"></div>
+        </div>
+
+        <div class="sq-block">
+          <div class="sq-label"><div class="sq-label-icon">◈</div> Security Questions</div>
+          <p class="sq-note">These answers are part of your key seed — they are never stored. Remember them exactly.</p>
+          <div class="field">
+            <label>Favourite pet name <span class="opt">— optional</span></label>
+            <input type="text" id="su-pet" placeholder="e.g. tommy" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>First job company <span class="opt">— optional</span></label>
+            <input type="text" id="su-job" placeholder="e.g. tcs" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Nickname at home <span class="opt">— optional</span></label>
+            <input type="text" id="su-nick" placeholder="e.g. manu" autocomplete="off">
+          </div>
+          <div class="field-msg" id="su-security-msg" style="margin-top:4px"></div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-signup" onclick="handleSignup()">Create Identity</button>
+      </div>
+
+      <div class="card-footer">
+        <div class="divider-footer">
+          <div class="divider-footer-line"></div>
+          <span style="font-size:11px;color:var(--text-muted)">Have an account?</span>
+          <div class="divider-footer-line"></div>
+        </div>
+        <button class="btn btn-ghost" onclick="goTo('page-signin')">Back to Sign In</button>
+        <div class="security-note"><div class="security-note-dot"></div>Ed25519 + secp256k1 keys derived via PBKDF2 · 200k iterations</div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // ================================================================
+    // CONSTANTS
+    // ================================================================
+    const RELAY = 'http://localhost:3001';
+
+    // ================================================================
+    // UTILITY HELPERS
+    // ================================================================
+    function toHex(bytes) {
+      return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    function hexToBytes(hex) {
+      const b = new Uint8Array(hex.length/2);
+      for (let i=0; i<hex.length; i+=2) b[i/2] = parseInt(hex.slice(i,i+2),16);
+      return b;
+    }
+    function toBase58(bytes) {
+      const A = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      let n = BigInt('0x'+toHex(bytes)), r='';
+      while (n > 0n) { r = A[Number(n%58n)] + r; n /= 58n; }
+      for (const b of bytes) { if (b!==0) break; r='1'+r; }
+      return r;
+    }
+
+    // ================================================================
+    // IDENTITY MODULE
+    // ================================================================
+    const IdentityModule = (() => {
+
+      function validateUsername(u) {
+        if (!u) return { valid:false, error:'Username is required.' };
+        const t = u.trim().toLowerCase();
+        if (t.length < 2)  return { valid:false, error:'Must be at least 2 characters.' };
+        if (t.length > 32) return { valid:false, error:'Must be 32 characters or less.' };
+        if (!/^[a-z0-9_-]+$/.test(t)) return { valid:false, error:'Only letters, numbers, _ and - allowed.' };
+        return { valid:true, value:t };
+      }
+
+      function validatePassword(p) {
+        if (!p) return { valid:false, error:'Password is required.' };
+        if (p.length < 8) return { valid:false, error:'Must be at least 8 characters.' };
+        if (!/[a-zA-Z]/.test(p)) return { valid:false, error:'Must contain at least one letter.' };
+        if (!/[0-9]/.test(p))    return { valid:false, error:'Must contain at least one number.' };
+        return { valid:true };
+      }
+
+      function validateSecurityAnswers(a) {
+        const filled = [a.petName, a.firstJob, a.nickname]
+          .map(v=>(v||'').trim()).filter(v=>v.length>0);
+        if (filled.length < 2) return { valid:false, error:'Please answer at least 2 security questions.' };
+        return { valid:true };
+      }
+
+      function buildSalt(username, answers) {
+        const pet  = (answers.petName  || '').trim().toLowerCase();
+        const job  = (answers.firstJob || '').trim().toLowerCase();
+        const nick = (answers.nickname || '').trim().toLowerCase();
+        return `udil:v1:${username}:${pet}${job}${nick}`;
+      }
+
+      async function stretchToSeed(password, salt) {
+        const enc = new TextEncoder();
+        const rawKey = await crypto.subtle.importKey('raw', enc.encode(password), { name:'PBKDF2' }, false, ['deriveBits']);
+        const bits = await crypto.subtle.deriveBits(
+          { name:'PBKDF2', salt:enc.encode(salt), iterations:200000, hash:'SHA-256' },
+          rawKey, 512
+        );
+        return new Uint8Array(bits);
+      }
+
+      async function buildPasswordDoubleHash(seed64) {
+        const innerHex = ethers.keccak256(seed64);
+        const outerHex = ethers.keccak256(ethers.toUtf8Bytes(innerHex));
+        return outerHex;
+      }
+
+      function deriveEVMWallet(seed64) {
+        const privHex = '0x'+toHex(seed64.slice(0,32));
+        const wallet = new ethers.Wallet(privHex);
+        return { privateKey:wallet.privateKey, publicKey:wallet.signingKey.publicKey, address:wallet.address };
+      }
+
+      function deriveDIDKeypair(seed64) {
+        const seedBytes = seed64.slice(32,64);
+        const kp = nacl.sign.keyPair.fromSeed(seedBytes);
+        return {
+          privateKey:         toHex(kp.secretKey.slice(0,32)),
+          fullSecretKey:      toHex(kp.secretKey),
+          publicKey:          toHex(kp.publicKey),
+          publicKeyMultibase: 'z'+toBase58(kp.publicKey),
+        };
+      }
+
+      function buildDIDDocument(username, evmWallet, didKeypair) {
+        const did = `did:polygon:${evmWallet.address}`;
+        return {
+          "@context": ["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
+          id: did, controller: did,
+          verificationMethod: [{ id:`${did}#key-1`, type:"Ed25519VerificationKey2020", controller:did, publicKeyMultibase:didKeypair.publicKeyMultibase }],
+          authentication: [`${did}#key-1`],
+          assertionMethod:  [`${did}#key-1`],
+          alsoKnownAs: [`emberveil:${username}`],
+          service: [{ id:`${did}#emberveil`, type:"EmberveilProfile", serviceEndpoint:`https://emberveil.id/users/${username}` }]
+        };
+      }
+
+      function saveSession(username, did, evmAddress, relayJWT) {
+        const payload = { username, did, evmAddress, token:relayJWT, savedAt:Date.now(), expiresAt:Date.now()+24*60*60*1000 };
+        sessionStorage.setItem('ev_session', JSON.stringify(payload));
+        return payload;
+      }
+
+      function getSession() {
+        const raw = sessionStorage.getItem('ev_session');
+        if (!raw) return null;
+        const s = JSON.parse(raw);
+        if (Date.now() > s.expiresAt) { sessionStorage.removeItem('ev_session'); return null; }
+        return s;
+      }
+
+      function clearSession() {
+        sessionStorage.removeItem('ev_session');
+        sessionStorage.removeItem('ev_keys');
+      }
+
+      function saveKeys(evmPrivKey, didPrivKey, didFullSecretKey) {
+        sessionStorage.setItem('ev_keys', JSON.stringify({ evmPrivateKey:evmPrivKey, didPrivateKey:didPrivKey, didFullSecretKey }));
+      }
+
+      function getSessionKeys() {
+        const raw = sessionStorage.getItem('ev_keys');
+        return raw ? JSON.parse(raw) : null;
+      }
+
+      function saveIdentity(username, evmWallet, didKeypair, didDocument) {
+        const record = {
+          username, evmAddress:evmWallet.address, evmPublicKey:evmWallet.publicKey,
+          didPublicKey:didKeypair.publicKey, didPublicMultibase:didKeypair.publicKeyMultibase,
+          didDocument, savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`ev_identity_${username}`, JSON.stringify(record));
+        return record;
+      }
+
+      function loadIdentity(username) {
+        const raw = localStorage.getItem(`ev_identity_${username}`);
+        return raw ? JSON.parse(raw) : null;
+      }
+
+      async function isUsernameAvailable(username) {
+        try {
+          const res = await fetch(`${RELAY}/api/check-username`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ username })
+          });
+          const data = await res.json();
+          return res.ok ? data.available : false;
+        } catch { return true; }
+      }
+
+      async function registerInRegistry(username, didDocument, ed25519PublicKey, passwordDoubleHash) {
+        const body = { username, didDocument:JSON.stringify(didDocument), ed25519PublicKey, passwordDoubleHash };
+        const res  = await fetch(`${RELAY}/api/register-user`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok) return true;
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      async function challengeSignin(username, fullSecretKeyHex) {
+        const nonceRes  = await fetch(`${RELAY}/api/auth/request-nonce`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ username })
+        });
+        const nonceData = await nonceRes.json();
+        if (!nonceRes.ok) throw new Error(nonceData.error || 'Failed to get nonce');
+
+        const messageBytes    = new TextEncoder().encode(nonceData.nonce);
+        const fullSecretBytes = hexToBytes(fullSecretKeyHex);
+        const sigBytes        = nacl.sign.detached(messageBytes, fullSecretBytes);
+        const sigHex          = toHex(sigBytes);
+
+        const verifyRes  = await fetch(`${RELAY}/api/auth/verify-signature`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ username, signature:sigHex })
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok) throw new Error(verifyData.error || 'Signature verification failed');
+        return verifyData.token;
+      }
+
+      async function signup(username, password, confirm, securityAnswers) {
+        const uc = validateUsername(username);
+        if (!uc.valid) return { success:false, field:'username', message:uc.error };
+        const clean = uc.value;
+
+        const pc = validatePassword(password);
+        if (!pc.valid) return { success:false, field:'password', message:pc.error };
+
+        if (password !== confirm) return { success:false, field:'confirm', message:'Passwords do not match.' };
+
+        const ac = validateSecurityAnswers(securityAnswers);
+        if (!ac.valid) return { success:false, field:'security', message:ac.error };
+
+        try {
+          const available = await isUsernameAvailable(clean);
+          if (!available) return { success:false, field:'username', message:`@${clean} is already taken.` };
+
+          const salt             = buildSalt(clean, securityAnswers);
+          const seed64           = await stretchToSeed(password, salt);
+          const evmWallet        = deriveEVMWallet(seed64);
+          const didKeypair       = deriveDIDKeypair(seed64);
+          const didDocument      = buildDIDDocument(clean, evmWallet, didKeypair);
+          const passwordDoubleHash = await buildPasswordDoubleHash(seed64);
+
+          await registerInRegistry(clean, didDocument, didKeypair.publicKey, passwordDoubleHash);
+
+          saveIdentity(clean, evmWallet, didKeypair, didDocument);
+          saveKeys(evmWallet.privateKey, didKeypair.privateKey, didKeypair.fullSecretKey);
+
+          const relayJWT = await challengeSignin(clean, didKeypair.fullSecretKey);
+          const session  = saveSession(clean, didDocument.id, evmWallet.address, relayJWT);
+
+          return { success:true, username:clean, session, evmWallet, didKeypair, didDocument };
+        } catch (err) {
+          console.error('Signup error:', err);
+          return { success:false, message: err.message || 'Signup failed. Please try again.' };
+        }
+      }
+
+      async function signin(username, password, securityAnswers) {
+        const uc = validateUsername(username);
+        if (!uc.valid) return { success:false, field:'username', message:uc.error };
+        const clean = uc.value;
+
+        if (!password) return { success:false, field:'password', message:'Password is required.' };
+
+        const ac = validateSecurityAnswers(securityAnswers);
+        if (!ac.valid) return { success:false, field:'security', message:ac.error };
+
+        try {
+          const salt       = buildSalt(clean, securityAnswers);
+          const seed64     = await stretchToSeed(password, salt);
+          const evmWallet  = deriveEVMWallet(seed64);
+          const didKeypair = deriveDIDKeypair(seed64);
+
+          const relayJWT = await challengeSignin(clean, didKeypair.fullSecretKey);
+
+          let local = loadIdentity(clean);
+          if (!local) {
+            local = {
+              evmAddress:evmWallet.address, evmPublicKey:evmWallet.publicKey,
+              didPublicKey:didKeypair.publicKey, didPublicMultibase:didKeypair.publicKeyMultibase,
+              didDocument: buildDIDDocument(clean, evmWallet, didKeypair),
+            };
+            saveIdentity(clean, evmWallet, didKeypair, local.didDocument);
+          }
+
+          saveKeys(evmWallet.privateKey, didKeypair.privateKey, didKeypair.fullSecretKey);
+          const session = saveSession(clean, local.didDocument.id, evmWallet.address, relayJWT);
+
+          return { success:true, username:clean, session, evmWallet, didKeypair, didDocument:local.didDocument };
+        } catch (err) {
+          console.error('Signin error:', err);
+          const isAuthFail = err.message.toLowerCase().includes('invalid signature') ||
+                             err.message.toLowerCase().includes('wrong password');
+          return {
+            success: false,
+            field:   isAuthFail ? 'password' : undefined,
+            message: isAuthFail ? 'Wrong password or security answers.' : err.message || 'Authentication failed.'
+          };
+        }
+      }
+
+      return { signup, signin, getSession, clearSession, getSessionKeys, loadIdentity, isUsernameAvailable };
+    })();
+
+
+    // ================================================================
+    // UI HELPERS
+    // ================================================================
+    function goTo(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function togglePw(id, btn) {
+      const inp = document.getElementById(id);
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.textContent = show ? '🙈' : '👁';
+    }
+
+    function fieldMsg(id, text, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = `field-msg ${type}`;
+    }
+
+    function showAlert(id, text) {
+      const el = document.getElementById(id);
+      const tx = document.getElementById(id+'-text');
+      if (!el || !tx) return;
+      tx.textContent = text;
+      el.classList.add('visible');
+      setTimeout(() => el.classList.remove('visible'), 6000);
+    }
+
+    function hideAlert(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visible');
+    }
+
+    function setBtn(id, loading) {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.classList.toggle('loading', loading);
+      btn.disabled = loading;
+    }
+
+
+    // ================================================================
+    // USERNAME CHECK (SIGNUP)
+    // ================================================================
+    let suDebounce;
+    function suUsernameCheck(input) {
+      clearTimeout(suDebounce);
+      const val = input.value.trim().toLowerCase();
+      const status = document.getElementById('su-username-status');
+      input.classList.remove('input-ok','input-err');
+      status.className = 'username-status';
+      fieldMsg('su-username-msg','','');
+      if (val.length < 2) return;
+      suDebounce = setTimeout(async () => {
+        if (!/^[a-z0-9_-]+$/.test(val)) {
+          input.classList.add('input-err');
+          fieldMsg('su-username-msg','Only letters, numbers, _ and - allowed.','err');
+          return;
+        }
+        const available = await IdentityModule.isUsernameAvailable(val);
+        if (!available) {
+          input.classList.add('input-err');
+          status.textContent='✗'; status.style.color='var(--rose)';
+          status.className='username-status visible';
+          fieldMsg('su-username-msg',`@${val} is already taken.`,'err');
+        } else {
+          input.classList.add('input-ok');
+          status.textContent='✓'; status.style.color='#4a8c6a';
+          status.className='username-status visible';
+          fieldMsg('su-username-msg',`@${val} is available`,'ok');
+        }
+      }, 450);
+    }
+
+
+    // ================================================================
+    // PASSWORD STRENGTH + CONFIRM
+    // ================================================================
+    function onStrength(input) {
+      const pw = input.value;
+      let score = 0;
+      if (pw.length >= 8)            score++;
+      if (pw.length >= 12)           score++;
+      if (/[A-Z]/.test(pw))          score++;
+      if (/[0-9]/.test(pw))          score++;
+      if (/[^a-zA-Z0-9]/.test(pw))   score++;
+      const pct    = [0,20,40,60,80,100][Math.min(score,5)];
+      const colors = ['','#c0506a','#d47c30','#c49a3c','#2d8c6a','#1a6644'];
+      const labels = ['','Very weak','Weak','Fair','Strong','Very strong'];
+      document.getElementById('strength-fill').style.width = pct+'%';
+      document.getElementById('strength-fill').style.backgroundColor = colors[score]||'transparent';
+      document.getElementById('strength-text').style.color = colors[score];
+      document.getElementById('strength-text').textContent = pw.length ? labels[score] : '';
+    }
+
+    function onConfirm(input) {
+      const pw = document.getElementById('su-password').value;
+      if (!input.value) { input.classList.remove('input-ok','input-err'); return; }
+      if (input.value === pw) {
+        input.classList.add('input-ok'); input.classList.remove('input-err');
+        fieldMsg('su-confirm-msg','Passwords match ✓','ok');
+      } else {
+        input.classList.add('input-err'); input.classList.remove('input-ok');
+        fieldMsg('su-confirm-msg','Passwords do not match.','err');
+      }
+    }
+
+
+    // ================================================================
+    // SIGNUP HANDLER
+    // ================================================================
+    async function handleSignup() {
+      hideAlert('su-alert');
+      ['su-username-msg','su-password-msg','su-confirm-msg','su-security-msg'].forEach(id => fieldMsg(id,'',''));
+
+      const username = document.getElementById('su-username').value.trim();
+      const password = document.getElementById('su-password').value;
+      const confirm  = document.getElementById('su-confirm').value;
+      const petName  = document.getElementById('su-pet').value;
+      const firstJob = document.getElementById('su-job').value;
+      const nickname = document.getElementById('su-nick').value;
+
+      if (password !== confirm) {
+        fieldMsg('su-confirm-msg','Passwords do not match.','err');
+        document.getElementById('su-confirm').classList.add('input-err');
+        return;
+      }
+
+      setBtn('btn-signup', true);
+      const result = await IdentityModule.signup(username, password, confirm, { petName, firstJob, nickname });
+      setBtn('btn-signup', false);
+
+      if (!result.success) {
+        if (result.field === 'username') fieldMsg('su-username-msg', result.message, 'err');
+        if (result.field === 'password') fieldMsg('su-password-msg', result.message, 'err');
+        if (result.field === 'confirm')  fieldMsg('su-confirm-msg',  result.message, 'err');
+        if (result.field === 'security') fieldMsg('su-security-msg', result.message, 'err');
+        if (!result.field) showAlert('su-alert', result.message);
+        return;
+      }
+
+      // Redirect to home page — session is already saved in sessionStorage
+      window.location.href = 'homeUI.html';
+    }
+
+
+    // ================================================================
+    // SIGNIN HANDLER
+    // ================================================================
+    async function handleSignin() {
+      hideAlert('si-alert');
+      ['si-username-msg','si-password-msg'].forEach(id => fieldMsg(id,'',''));
+
+      const username = document.getElementById('si-username').value.trim();
+      const password = document.getElementById('si-password').value;
+      const petName  = document.getElementById('si-pet').value;
+      const firstJob = document.getElementById('si-job').value;
+      const nickname = document.getElementById('si-nick').value;
+
+      setBtn('btn-signin', true);
+      const result = await IdentityModule.signin(username, password, { petName, firstJob, nickname });
+      setBtn('btn-signin', false);
+
+      if (!result.success) {
+        if (result.field === 'username') fieldMsg('si-username-msg', result.message, 'err');
+        if (result.field === 'password') fieldMsg('si-password-msg', result.message, 'err');
+        if (!result.field) showAlert('si-alert', result.message);
+        return;
+      }
+
+      // Redirect to home page — session is already saved in sessionStorage
+      window.location.href = 'homeUI.html';
+    }
+
+
+    // ================================================================
+    // LIBRARY CHECK
+    // ================================================================
+    (function () {
+      const ethOk    = typeof ethers !== 'undefined' && !!ethers.Wallet;
+      const naclOk   = typeof nacl   !== 'undefined' && !!nacl.sign;
+      const cryptoOk = typeof crypto !== 'undefined' && !!crypto.subtle;
+      console.log(`${ethOk?'✓':'✗'} ethers.js`);
+      console.log(`${naclOk?'✓':'✗'} TweetNaCl`);
+      console.log(`${cryptoOk?'✓':'✗'} Web Crypto API`);
+      if (!ethOk || !naclOk || !cryptoOk) console.error('⚠ Some crypto libraries failed to load.');
+    })();
+
+    // ================================================================
+    // AUTO-REDIRECT IF ALREADY LOGGED IN
+    // ================================================================
+    (function () {
+      const raw = sessionStorage.getItem('ev_session');
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (Date.now() < s.expiresAt) window.location.href = 'homeUI.html';
+    })();
+  </script>
+</body>
+</html>

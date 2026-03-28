@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emberveil — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ivory:       #faf8f3;
+      --cream:       #f4f0e8;
+      --parchment:   #ede7d9;
+      --sage:        #e6f0ea;
+      --sage2:       #c8ddd0;
+      --royal:       #1a3a8f;
+      --royal-mid:   #2d55c4;
+      --royal-light: #dde6fb;
+      --royal-mist:  #eef2fd;
+      --gold:        #c49a3c;
+      --gold-dark:   #a07830;
+      --gold-light:  #f5e6c0;
+      --gold-pale:   #fdf6e3;
+      --ember:       #c84b1a;
+      --ember-light: #fde8de;
+      --rose:        #c0506a;
+      --rose-light:  #fce8ed;
+      --border:      #e2d9ce;
+      --border-soft: #ede8e0;
+      --text:        #1e1a14;
+      --text-mid:    #4a4035;
+      --text-soft:   #8a7f72;
+      --text-muted:  #b5aca0;
+      --green:       #2d8c6a;
+      --shadow-sm:   0 1px 4px rgba(26,58,143,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:      0 4px 20px rgba(26,58,143,.08), 0 1px 4px rgba(0,0,0,.05);
+      --shadow-lg:   0 12px 48px rgba(26,58,143,.13), 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--ivory);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Ambient gradient */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 80% 10%, rgba(26,58,143,.04) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 10% 90%, rgba(196,154,60,.05) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      height: 58px;
+      background: rgba(250,248,243,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 22px; }
+
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand-icon {
+      width: 34px; height: 34px; background: var(--royal);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 17px;
+      box-shadow: 0 3px 10px rgba(26,58,143,.28);
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-family: 'Fraunces', serif;
+      font-size: 18px; font-weight: 500;
+      color: var(--royal); letter-spacing: -.3px;
+    }
+
+    /* Network badge */
+    .network-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 11px 4px 8px;
+      background: var(--gold-pale);
+      border: 1px solid var(--gold-light);
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      color: var(--gold-dark);
+      letter-spacing: .2px;
+      white-space: nowrap;
+    }
+    .network-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 2px rgba(196,154,60,.25);
+      animation: pulse 2.5s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(196,154,60,.25); }
+      50%       { box-shadow: 0 0 0 4px rgba(196,154,60,.1); }
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+    /* DID pill in topbar */
+    .did-pill {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 12px;
+      background: var(--royal-mist);
+      border: 1px solid var(--royal-light);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      max-width: 220px;
+    }
+    .did-pill:hover { background: var(--royal-light); border-color: rgba(45,85,196,.35); }
+    .did-pill-icon  { font-size: 11px; color: var(--royal-mid); flex-shrink: 0; }
+    .did-pill-text  {
+      font-size: 11px; font-weight: 500; color: var(--royal);
+      font-family: 'DM Mono', 'Menlo', monospace;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* Profile avatar */
+    .profile-wrap { position: relative; }
+    .profile-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--royal) 0%, var(--royal-mid) 100%);
+      color: #fff; font-size: 14px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 2px solid var(--royal-light);
+      transition: box-shadow .2s, transform .2s; user-select: none;
+    }
+    .profile-avatar:hover { box-shadow: 0 4px 14px rgba(26,58,143,.28); transform: scale(1.06); }
+
+    /* Profile dropdown */
+    .profile-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: #fff; border: 1px solid var(--border-soft);
+      border-radius: 15px; box-shadow: var(--shadow-lg);
+      width: 230px; overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-8px) scale(.97);
+      transition: opacity .2s, transform .2s;
+      z-index: 200;
+    }
+    .profile-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+
+    .dropdown-header {
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border-soft);
+      background: var(--royal-mist);
+    }
+    .dropdown-handle  { font-weight: 600; font-size: 14px; color: var(--royal); }
+    .dropdown-did     { font-size: 10px; color: var(--text-muted); margin-top: 2px; word-break: break-all; font-family: monospace; }
+
+    .dropdown-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 18px;
+      font-size: 13px; color: var(--text-mid);
+      cursor: pointer; transition: background .15s, color .15s;
+      border: none; background: none; width: 100%;
+      text-align: left; font-family: 'DM Sans', sans-serif;
+    }
+    .dropdown-item:hover { background: var(--ivory); color: var(--royal); }
+    .dropdown-item .di-icon { font-size: 14px; width: 20px; text-align: center; }
+    .dropdown-item.danger   { color: var(--rose); }
+    .dropdown-item.danger:hover { background: var(--rose-light); color: #8b2a40; }
+    .dropdown-divider { height: 1px; background: var(--border-soft); margin: 4px 0; }
+
+    /* ── Main layout ── */
+    .main { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Identity card ── */
+    .identity-card {
+      background: linear-gradient(135deg, var(--royal) 0%, #1e45a8 60%, #2535a0 100%);
+      border-radius: 18px;
+      padding: 28px 32px;
+      color: #fff;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(26,58,143,.3), 0 2px 8px rgba(0,0,0,.1);
+      animation: slideUp .5s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideUp { from { opacity:0; transform: translateY(18px) } to { opacity:1; transform: translateY(0) } }
+
+    /* Decorative circles */
+    .identity-card::before {
+      content: ''; position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,.05); pointer-events: none;
+    }
+    .identity-card::after {
+      content: ''; position: absolute;
+      bottom: -40px; left: 160px;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: rgba(255,255,255,.04); pointer-events: none;
+    }
+
+    .identity-card-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 16px;
+      margin-bottom: 22px; position: relative; z-index: 1;
+    }
+
+    .identity-greeting {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(22px, 3.5vw, 28px);
+      font-weight: 500; line-height: 1.2;
+      letter-spacing: -.4px;
+    }
+    .identity-greeting em { font-style: italic; opacity: .85; }
+
+    .identity-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .identity-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #6effc5; }
+
+    .identity-fields {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; position: relative; z-index: 1;
+    }
+    @media (max-width: 560px) { .identity-fields { grid-template-columns: 1fr; } }
+
+    .identity-field {}
+    .identity-field-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .5px;
+      text-transform: uppercase; opacity: .55; margin-bottom: 4px;
+    }
+    .identity-field-val {
+      font-size: 12px; font-weight: 400; font-family: 'DM Mono', 'Menlo', monospace;
+      opacity: .9; word-break: break-all; line-height: 1.5;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .copy-chip {
+      font-size: 9px; padding: 2px 7px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 5px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-weight: 600;
+      color: rgba(255,255,255,.85); white-space: nowrap;
+      transition: background .15s; flex-shrink: 0;
+    }
+    .copy-chip:hover { background: rgba(255,255,255,.25); }
+
+    /* ── Section header ── */
+    .section-header { margin-bottom: 20px; }
+    .section-title {
+      font-family: 'Fraunces', serif;
+      font-size: 19px; font-weight: 500;
+      color: var(--text); letter-spacing: -.3px; margin-bottom: 4px;
+    }
+    .section-sub { font-size: 13px; font-weight: 300; color: var(--text-soft); }
+
+    /* ── App grid ── */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      animation: slideUp .55s .08s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .app-card {
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 22px 20px 18px;
+      transition: box-shadow .25s, transform .25s, border-color .25s;
+      position: relative; overflow: hidden;
+      cursor: default;
+    }
+    .app-card.interactive { cursor: pointer; }
+    .app-card.interactive:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-3px);
+      border-color: var(--royal-light);
+    }
+    .app-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      opacity: 0; transition: opacity .25s;
+    }
+    .app-card.interactive:hover::before { opacity: 1; }
+
+    /* Per-app accent colours */
+    .app-card[data-app="microblogger"]::before { background: linear-gradient(90deg, var(--royal), var(--royal-mid)); }
+    .app-card[data-app="milcomm"]::before      { background: linear-gradient(90deg, #1a7a5e, #2dbe95); }
+    .app-card[data-app="mail"]::before         { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); }
+    .app-card[data-app="wallet"]::before       { background: linear-gradient(90deg, var(--ember), #e06a30); }
+    .app-card[data-app="drive"]::before        { background: linear-gradient(90deg, #5a3a8f, #8b55c4); }
+    .app-card[data-app="more"]::before         { background: linear-gradient(90deg, var(--text-muted), var(--text-soft)); }
+
+    .app-icon-wrap {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 14px;
+    }
+
+    /* Icon bg per app */
+    .app-card[data-app="microblogger"] .app-icon-wrap { background: var(--royal-mist); }
+    .app-card[data-app="milcomm"]      .app-icon-wrap { background: #e8f7f2; }
+    .app-card[data-app="mail"]         .app-icon-wrap { background: var(--gold-pale); }
+    .app-card[data-app="wallet"]       .app-icon-wrap { background: var(--ember-light); }
+    .app-card[data-app="drive"]        .app-icon-wrap { background: #f2eef9; }
+    .app-card[data-app="more"]         .app-icon-wrap { background: var(--cream); }
+
+    .app-name {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      margin-bottom: 4px; letter-spacing: -.1px;
+    }
+    .app-desc {
+      font-size: 12px; font-weight: 300; color: var(--text-soft);
+      line-height: 1.55; margin-bottom: 14px;
+    }
+
+    /* Status badge */
+    .app-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 10.5px; font-weight: 600; letter-spacing: .2px;
+    }
+    .app-status-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+    .status-live    { background: #e8f7f0; color: #1a7a5e; border: 1px solid #c0e8d8; }
+    .status-live    .app-status-dot { background: #2dbe95; }
+    .status-beta    { background: var(--gold-pale); color: var(--gold-dark); border: 1px solid var(--gold-light); }
+    .status-beta    .app-status-dot { background: var(--gold); }
+    .status-soon    { background: var(--cream); color: var(--text-soft); border: 1px solid var(--border); }
+    .status-soon    .app-status-dot { background: var(--text-muted); }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,20,10,.38);
+      display: none; align-items: center; justify-content: center;
+      z-index: 500; padding: 24px;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+    .modal-box {
+      background: #fff; border-radius: 18px;
+      box-shadow: var(--shadow-lg); width: 100%; max-width: 500px;
+      overflow: hidden; animation: slideUp .3s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-box::before {
+      content: ''; display: block; height: 2px;
+      background: linear-gradient(90deg, var(--royal), var(--gold));
+    }
+
+    .modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; color: var(--text); }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 18px; color: var(--text-muted); padding: 3px 7px;
+      border-radius: 7px; transition: background .15s; line-height: 1;
+    }
+    .modal-close:hover { background: var(--cream); color: var(--text); }
+    .modal-body { padding: 20px 24px 24px; }
+
+    .detail-row {
+      display: flex; flex-direction: column; gap: 5px;
+      padding: 12px 0; border-bottom: 1px solid var(--border-soft);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-size: 10.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .45px; }
+    .detail-val   { font-size: 12px; color: var(--text-mid); word-break: break-all; font-family: monospace; line-height: 1.55; }
+    .detail-val.highlight { color: var(--royal-mid); }
+    .detail-val.warning   { color: #8b5e1a; background: var(--gold-pale); border: 1px solid var(--gold-light); border-radius: 7px; padding: 8px 10px; font-size: 11px; }
+
+    .copy-btn {
+      font-size: 10px; padding: 2px 8px;
+      background: var(--royal-mist); color: var(--royal);
+      border: 1px solid var(--royal-light); border-radius: 5px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500;
+      transition: background .15s; white-space: nowrap;
+    }
+    .copy-btn:hover { background: var(--royal-light); }
+
+    .warn-box {
+      background: var(--rose-light); border: 1px solid rgba(192,80,106,.25);
+      border-radius: 9px; padding: 12px 14px;
+      font-size: 12.5px; color: #8b2a40; line-height: 1.5; margin-bottom: 16px;
+    }
+    .reveal-btn {
+      width: 100%; padding: 10px;
+      background: var(--rose-light); border: 1.5px solid rgba(192,80,106,.3);
+      border-radius: 9px; color: #8b2a40;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .reveal-btn:hover { background: #f5d0d8; }
+
+    /* ── Footer note ── */
+    .home-footer-note {
+      text-align: center; margin-top: 50px;
+      font-size: 11.5px; font-weight: 300;
+      color: var(--text-muted); line-height: 1.8;
+    }
+    .home-footer-note a { color: var(--royal-mid); text-decoration: none; }
+    .home-footer-note a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Top bar ── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="#">
+        <div class="brand-icon">𑀅</div>
+        <span class="brand-name">Emberveil</span>
+      </a>
+      <div class="network-badge">
+        <div class="network-dot"></div>
+        Polygon Amoy
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="did-pill" onclick="openModal('modal-account')" title="View account details">
+        <span class="did-pill-icon">◈</span>
+        <span class="did-pill-text" id="topbar-did">did:polygon:0x…</span>
+      </div>
+
+      <div class="profile-wrap">
+        <div class="profile-avatar" id="profile-avatar" onclick="toggleDropdown()">—</div>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-handle" id="dropdown-handle">@username</div>
+            <div class="dropdown-did"    id="dropdown-did">did:polygon:0x…</div>
+          </div>
+          <button class="dropdown-item" onclick="openModal('modal-account')"><span class="di-icon">◉</span> Account</button>
+          <button class="dropdown-item" onclick="openModal('modal-privkey')"><span class="di-icon">⬡</span> Private Key</button>
+          <button class="dropdown-item" onclick="openModal('modal-did')"><span class="di-icon">◈</span> DID Details</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="handleLogout()"><span class="di-icon">⏻</span> Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ── Main content ── -->
+  <main class="main">
+
+    <!-- Identity card -->
+    <div class="identity-card" id="identity-card">
+      <div class="identity-card-top">
+        <div class="identity-greeting">
+          Your identity,<br><em id="greeting-username">unchained.</em>
+        </div>
+        <div class="identity-badge">
+          <div class="identity-badge-dot"></div>
+          Authenticated
+        </div>
+      </div>
+
+      <div class="identity-fields">
+        <div class="identity-field">
+          <div class="identity-field-label">Wallet Address</div>
+          <div class="identity-field-val">
+            <span id="card-address">0x…</span>
+            <button class="copy-chip" onclick="copyText(document.getElementById('card-address').textContent, this)">Copy</button>
+          </div>
+        </div>
+        <div class="identity-field">
+          <div class="identity-field-label">DID Identifier</div>
+          <div class="identity-field-val">
+            <span id="card-did">did:polygon:0x…</span>
+            <button class="copy-chip" onclick="copyText(document.getElementById('card-did').textContent, this)">Copy</button>
+          </div>
+        </div>
+        <div class="identity-field">
+          <div class="identity-field-label">Network</div>
+          <div class="identity-field-val">Polygon Amoy (testnet)</div>
+        </div>
+        <div class="identity-field">
+          <div class="identity-field-label">Key Method</div>
+          <div class="identity-field-val">Ed25519 + secp256k1 via PBKDF2</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- App ecosystem -->
+    <div class="section-header">
+      <h2 class="section-title">Ecosystem Apps</h2>
+      <p class="section-sub">Applications that use your Emberveil DID as a single identity layer</p>
+    </div>
+
+    <div class="app-grid">
+
+      <div class="app-card" data-app="microblogger">
+        <div class="app-icon-wrap">✦</div>
+        <div class="app-name">Microblogger</div>
+        <div class="app-desc">Publish posts anchored to your DID. Portable across platforms via AT Protocol.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
+      </div>
+
+      <div class="app-card" data-app="milcomm">
+        <div class="app-icon-wrap">◈</div>
+        <div class="app-name">MilComm</div>
+        <div class="app-desc">End-to-end encrypted messaging. Keys bound to your on-chain DID — no middlemen.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
+      </div>
+
+      <div class="app-card" data-app="mail">
+        <div class="app-icon-wrap">✉</div>
+        <div class="app-name">Mail</div>
+        <div class="app-desc">Decentralised e-mail with DID-based addressing and encrypted storage on IPFS.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
+      </div>
+
+      <div class="app-card" data-app="wallet">
+        <div class="app-icon-wrap">◎</div>
+        <div class="app-name">Wallet</div>
+        <div class="app-desc">Native EVM wallet tied to your identity. Send, receive, and manage assets.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
+      </div>
+
+      <div class="app-card" data-app="drive">
+        <div class="app-icon-wrap">⬡</div>
+        <div class="app-name">Drive</div>
+        <div class="app-desc">Encrypted file storage on IPFS with access controlled by your DID keypair.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
+      </div>
+
+      <div class="app-card" data-app="more" style="opacity:.5">
+        <div class="app-icon-wrap">＋</div>
+        <div class="app-name">More apps</div>
+        <div class="app-desc">The ecosystem will grow. Every app uses your single Emberveil identity.</div>
+        <span class="app-status status-soon"><div class="app-status-dot"></div>Planned</span>
+      </div>
+
+    </div>
+
+    <p class="home-footer-note">
+      Emberveil · Self-Sovereign Identity on Polygon Amoy<br>
+      Your keys never leave your device · Built with Ed25519 + secp256k1 · PBKDF2 · 200k iterations
+    </p>
+  </main>
+
+
+  <!-- ================================================================
+     MODALS
+     ================================================================ -->
+
+  <!-- Account modal -->
+  <div class="modal-overlay" id="modal-account">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">Account</span>
+        <button class="modal-close" onclick="closeModal('modal-account')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row">
+          <span class="detail-label">Username</span>
+          <span class="detail-val highlight" id="acc-username"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Wallet Address</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+            <span class="detail-val highlight" id="acc-address"></span>
+            <button class="copy-btn" onclick="copyFieldEl('acc-address', this)">Copy</button>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">DID</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+            <span class="detail-val" id="acc-did"></span>
+            <button class="copy-btn" onclick="copyFieldEl('acc-did', this)">Copy</button>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Network</span>
+          <span class="detail-val">Polygon Amoy (testnet)</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Session Since</span>
+          <span class="detail-val" id="acc-date"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Private key modal -->
+  <div class="modal-overlay" id="modal-privkey">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">Private Key</span>
+        <button class="modal-close" onclick="closeModal('modal-privkey'); hidePrivKey()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="warn-box">⚠ Never share your private key. Anyone with this key controls your wallet and identity.</div>
+        <div id="privkey-hidden">
+          <button class="reveal-btn" onclick="revealPrivKey()">Reveal EVM Private Key</button>
+        </div>
+        <div id="privkey-shown" style="display:none">
+          <div class="detail-row">
+            <span class="detail-label">EVM Private Key (secp256k1)</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <span class="detail-val warning" id="pk-evm"></span>
+              <button class="copy-btn" onclick="copyFieldEl('pk-evm',this)">Copy</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">DID Signing Key (Ed25519)</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+              <span class="detail-val warning" id="pk-did"></span>
+              <button class="copy-btn" onclick="copyFieldEl('pk-did',this)">Copy</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">EVM Public Key</span>
+            <span class="detail-val" id="pk-pub"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DID Details modal -->
+  <div class="modal-overlay" id="modal-did">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">DID Details</span>
+        <button class="modal-close" onclick="closeModal('modal-did')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row">
+          <span class="detail-label">DID Identifier</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+            <span class="detail-val highlight" id="did-id"></span>
+            <button class="copy-btn" onclick="copyFieldEl('did-id',this)">Copy</button>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Ed25519 Public Key (multibase)</span>
+          <span class="detail-val" id="did-pubkey"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Verification Method</span>
+          <span class="detail-val" id="did-vm"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Also Known As</span>
+          <span class="detail-val" id="did-aka"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Full DID Document</span>
+          <div style="margin-top:6px">
+            <button class="copy-btn" onclick="copyDIDDoc()" style="padding:4px 12px;font-size:11px">Copy JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // ================================================================
+    // MINIMAL SESSION UTILITIES (no crypto needed here)
+    // ================================================================
+    const AUTH_PAGE = 'authenticationUI.html';
+
+    function getSession() {
+      const raw = sessionStorage.getItem('ev_session');
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (Date.now() > s.expiresAt) { sessionStorage.removeItem('ev_session'); return null; }
+      return s;
+    }
+
+    function getSessionKeys() {
+      const raw = sessionStorage.getItem('ev_keys');
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function loadIdentity(username) {
+      const raw = localStorage.getItem(`ev_identity_${username}`);
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem('ev_session');
+      sessionStorage.removeItem('ev_keys');
+    }
+
+    // ================================================================
+    // GUARD — redirect to auth if no session
+    // ================================================================
+    const _session = getSession();
+    if (!_session) { window.location.href = AUTH_PAGE; }
+
+    // ================================================================
+    // POPULATE PAGE
+    // ================================================================
+    (function populate() {
+      if (!_session) return;
+
+      const local = loadIdentity(_session.username);
+      const keys  = getSessionKeys() || {};
+
+      const username   = _session.username;
+      const evmAddress = _session.evmAddress;
+      const did        = _session.did || (local && local.didDocument && local.didDocument.id) || '';
+      const evmPubKey  = (local && local.evmPublicKey) || '(re-login to view)';
+      const didPubKey  = (local && local.didPublicKey) || '';
+      const didMulti   = (local && local.didPublicMultibase) || '';
+      const didDoc     = (local && local.didDocument) || {};
+      const vm         = didDoc.verificationMethod && didDoc.verificationMethod[0];
+
+      // Initials for avatar
+      const initials = username.slice(0,2).toUpperCase();
+      document.getElementById('profile-avatar').textContent = initials;
+
+      // Topbar DID pill — truncate nicely
+      const shortDid = did.length > 26 ? did.slice(0,14) + '…' + did.slice(-8) : did;
+      document.getElementById('topbar-did').textContent = shortDid;
+
+      // Dropdown
+      document.getElementById('dropdown-handle').textContent = '@' + username;
+      document.getElementById('dropdown-did').textContent = did.length > 42 ? did.slice(0,42) + '…' : did;
+
+      // Identity card
+      document.getElementById('greeting-username').textContent = '@' + username + '.';
+      document.getElementById('card-address').textContent = evmAddress;
+      document.getElementById('card-did').textContent     = did;
+
+      // Account modal
+      document.getElementById('acc-username').textContent = '@' + username;
+      document.getElementById('acc-address').textContent  = evmAddress;
+      document.getElementById('acc-did').textContent      = did;
+      document.getElementById('acc-date').textContent     = new Date(_session.savedAt).toLocaleString('en-IN', {
+        day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
+      });
+
+      // Private key modal
+      document.getElementById('pk-evm').textContent = keys.evmPrivateKey || '(re-login to view)';
+      document.getElementById('pk-did').textContent = keys.didPrivateKey  || '(re-login to view)';
+      document.getElementById('pk-pub').textContent = evmPubKey;
+
+      // DID modal
+      document.getElementById('did-id').textContent     = did;
+      document.getElementById('did-pubkey').textContent = vm ? vm.publicKeyMultibase : didMulti;
+      document.getElementById('did-vm').textContent     = vm ? vm.id : '';
+      document.getElementById('did-aka').textContent    = didDoc.alsoKnownAs ? didDoc.alsoKnownAs.join(', ') : '';
+
+      window._didDocForCopy = didDoc;
+    })();
+
+
+    // ================================================================
+    // DROPDOWN
+    // ================================================================
+    function toggleDropdown() { document.getElementById('profile-dropdown').classList.toggle('open'); }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.profile-wrap'))
+        document.getElementById('profile-dropdown').classList.remove('open');
+    });
+
+    // ================================================================
+    // MODALS
+    // ================================================================
+    function openModal(id) {
+      document.getElementById('profile-dropdown').classList.remove('open');
+      document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+      o.addEventListener('click', e => {
+        if (e.target === o) { o.classList.remove('open'); hidePrivKey(); }
+      });
+    });
+
+    function revealPrivKey() {
+      document.getElementById('privkey-hidden').style.display = 'none';
+      document.getElementById('privkey-shown').style.display  = 'block';
+    }
+    function hidePrivKey() {
+      document.getElementById('privkey-hidden').style.display = 'block';
+      document.getElementById('privkey-shown').style.display  = 'none';
+    }
+
+    // ================================================================
+    // COPY HELPERS
+    // ================================================================
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (!btn) return;
+        const prev = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = prev, 1500);
+      });
+    }
+
+    function copyFieldEl(id, btn) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      copyText(el.textContent, btn || el.nextElementSibling);
+    }
+
+    function copyDIDDoc() {
+      if (window._didDocForCopy)
+        navigator.clipboard.writeText(JSON.stringify(window._didDocForCopy, null, 2));
+    }
+
+    // ================================================================
+    // LOGOUT
+    // ================================================================
+    function handleLogout() {
+      clearSession();
+      document.getElementById('profile-dropdown').classList.remove('open');
+      window.location.href = AUTH_PAGE;
+    }
+  </script>
+</body>
+</html>
