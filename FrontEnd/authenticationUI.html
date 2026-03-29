@@ -188,6 +188,10 @@
     input::placeholder { color: var(--text-muted); }
 
     /* Password eye */
+    .pw-msg {
+      font-size: 11px; font-weight: 300; color: var(--text-muted);
+      margin-bottom: 4px;
+    }
     .pw-wrap { position: relative; }
     .pw-wrap input { padding-right: 42px; }
     .eye-btn {
@@ -470,6 +474,7 @@
         </div>
 
         <div class="field">
+          <p class="pw-msg">Remember the password you create — it cannot be recovered if lost.</p>
           <label>Password <span class="req">✦</span></label>
           <div class="pw-wrap">
             <input type="password" id="su-password" placeholder="Min 8 chars, letter + number" oninput="onStrength(this)">
@@ -497,6 +502,7 @@
         <div class="sq-block">
           <div class="sq-label"><div class="sq-label-icon">◈</div> Security Questions</div>
           <p class="sq-note">These answers are part of your key seed — they are never stored. Remember them exactly.</p>
+          <p class="sq-note">Answer with you wish follow minimum 2 questions.</p>  
           <div class="field">
             <label>Favourite pet name <span class="opt">— optional</span></label>
             <input type="text" id="su-pet" placeholder="e.g. tommy" autocomplete="off">
