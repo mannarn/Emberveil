@@ -20,8 +20,8 @@ app.use(express.json());
 const CONTRACT_ADDRESS  = process.env.CONTRACT_ADDRESS;
 const RPC_URL           = process.env.RPC_URL           || "https://rpc-amoy.polygon.technology";
 const RELAY_PRIVATE_KEY = process.env.RELAY_PRIVATE_KEY;
-const JWT_SECRET        = process.env.JWT_SECRET;
-const PORT              = process.env.PORT || 3001;
+const JWT_SECRET        = process.env.JWT_SECRET || "103f4efb09dc0633d51bbee519e3bd41a1a11532ba6f1363eb7e1a89f07139db80e688ddc6d78cc401876ddf828fe1bfff3aca1ea10ba3f4f58e762aa966e988";
+const PORT              = process.env.PORT || 8080;
 const NONCE_TTL_MS      = 5 * 60 * 1000; // 5 minutes
 
 if (!RELAY_PRIVATE_KEY) throw new Error('RELAY_PRIVATE_KEY required in .env');
