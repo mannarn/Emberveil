@@ -38,6 +38,12 @@
       --shadow-sm:   0 1px 4px rgba(26,58,143,.06), 0 1px 2px rgba(0,0,0,.04);
       --shadow:      0 4px 20px rgba(26,58,143,.08), 0 1px 4px rgba(0,0,0,.05);
       --shadow-lg:   0 12px 48px rgba(26,58,143,.13), 0 2px 8px rgba(0,0,0,.06);
+      /* Bluesky brand */
+      --bsky:        #0085ff;
+      --bsky-mid:    #0066cc;
+      --bsky-light:  #dff0ff;
+      --bsky-mist:   #f0f8ff;
+      --bsky-border: #9dd0ff;
     }
 
     html, body {
@@ -49,7 +55,6 @@
       line-height: 1.5;
     }
 
-    /* Ambient gradient */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -88,7 +93,6 @@
       color: var(--royal); letter-spacing: -.3px;
     }
 
-    /* Network badge */
     .network-badge {
       display: flex; align-items: center; gap: 6px;
       padding: 4px 11px 4px 8px;
@@ -113,7 +117,6 @@
 
     .topbar-right { display: flex; align-items: center; gap: 14px; }
 
-    /* DID pill in topbar */
     .did-pill {
       display: flex; align-items: center; gap: 7px;
       padding: 5px 12px;
@@ -132,7 +135,6 @@
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
-    /* Profile avatar */
     .profile-wrap { position: relative; }
     .profile-avatar {
       width: 36px; height: 36px; border-radius: 50%;
@@ -144,7 +146,6 @@
     }
     .profile-avatar:hover { box-shadow: 0 4px 14px rgba(26,58,143,.28); transform: scale(1.06); }
 
-    /* Profile dropdown */
     .profile-dropdown {
       position: absolute; top: calc(100% + 10px); right: 0;
       background: #fff; border: 1px solid var(--border-soft);
@@ -196,7 +197,6 @@
     }
     @keyframes slideUp { from { opacity:0; transform: translateY(18px) } to { opacity:1; transform: translateY(0) } }
 
-    /* Decorative circles */
     .identity-card::before {
       content: ''; position: absolute;
       top: -60px; right: -60px;
@@ -241,7 +241,6 @@
     }
     @media (max-width: 560px) { .identity-fields { grid-template-columns: 1fr; } }
 
-    .identity-field {}
     .identity-field-label {
       font-size: 10px; font-weight: 600; letter-spacing: .5px;
       text-transform: uppercase; opacity: .55; margin-bottom: 4px;
@@ -295,6 +294,9 @@
       transform: translateY(-3px);
       border-color: var(--royal-light);
     }
+    .app-card[data-app="bluesky"].interactive:hover {
+      border-color: var(--bsky-border);
+    }
     .app-card::before {
       content: '';
       position: absolute; top: 0; left: 0; right: 0;
@@ -303,12 +305,12 @@
     }
     .app-card.interactive:hover::before { opacity: 1; }
 
-    /* Per-app accent colours */
     .app-card[data-app="microblogger"]::before { background: linear-gradient(90deg, var(--royal), var(--royal-mid)); }
     .app-card[data-app="milcomm"]::before      { background: linear-gradient(90deg, #1a7a5e, #2dbe95); }
     .app-card[data-app="mail"]::before         { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); }
     .app-card[data-app="wallet"]::before       { background: linear-gradient(90deg, var(--ember), #e06a30); }
     .app-card[data-app="drive"]::before        { background: linear-gradient(90deg, #5a3a8f, #8b55c4); }
+    .app-card[data-app="bluesky"]::before      { background: linear-gradient(90deg, var(--bsky-mid), var(--bsky)); }
     .app-card[data-app="more"]::before         { background: linear-gradient(90deg, var(--text-muted), var(--text-soft)); }
 
     .app-icon-wrap {
@@ -317,12 +319,12 @@
       font-size: 22px; margin-bottom: 14px;
     }
 
-    /* Icon bg per app */
     .app-card[data-app="microblogger"] .app-icon-wrap { background: var(--royal-mist); }
     .app-card[data-app="milcomm"]      .app-icon-wrap { background: #e8f7f2; }
     .app-card[data-app="mail"]         .app-icon-wrap { background: var(--gold-pale); }
     .app-card[data-app="wallet"]       .app-icon-wrap { background: var(--ember-light); }
     .app-card[data-app="drive"]        .app-icon-wrap { background: #f2eef9; }
+    .app-card[data-app="bluesky"]      .app-icon-wrap { background: var(--bsky-mist); }
     .app-card[data-app="more"]         .app-icon-wrap { background: var(--cream); }
 
     .app-name {
@@ -334,7 +336,6 @@
       line-height: 1.55; margin-bottom: 14px;
     }
 
-    /* Status badge */
     .app-status {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 3px 9px;
@@ -343,12 +344,21 @@
     }
     .app-status-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 
-    .status-live    { background: #e8f7f0; color: #1a7a5e; border: 1px solid #c0e8d8; }
-    .status-live    .app-status-dot { background: #2dbe95; }
-    .status-beta    { background: var(--gold-pale); color: var(--gold-dark); border: 1px solid var(--gold-light); }
-    .status-beta    .app-status-dot { background: var(--gold); }
-    .status-soon    { background: var(--cream); color: var(--text-soft); border: 1px solid var(--border); }
-    .status-soon    .app-status-dot { background: var(--text-muted); }
+    .status-live      { background: #e8f7f0; color: #1a7a5e; border: 1px solid #c0e8d8; }
+    .status-live      .app-status-dot { background: #2dbe95; }
+    .status-beta      { background: var(--gold-pale); color: var(--gold-dark); border: 1px solid var(--gold-light); }
+    .status-beta      .app-status-dot { background: var(--gold); }
+    .status-soon      { background: var(--cream); color: var(--text-soft); border: 1px solid var(--border); }
+    .status-soon      .app-status-dot { background: var(--text-muted); }
+    .status-connect   { background: var(--bsky-mist); color: var(--bsky-mid); border: 1px solid var(--bsky-border); }
+    .status-connect   .app-status-dot { background: var(--bsky); animation: pulse-bsky 2s ease infinite; }
+    .status-connected { background: #e6f9f2; color: #1a7a5e; border: 1px solid #a8e4cc; }
+    .status-connected .app-status-dot { background: #2dbe95; }
+
+    @keyframes pulse-bsky {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(0,133,255,.2); }
+      50%       { box-shadow: 0 0 0 4px rgba(0,133,255,.08); }
+    }
 
     /* ── Modal overlay ── */
     .modal-overlay {
@@ -368,6 +378,9 @@
     .modal-box::before {
       content: ''; display: block; height: 2px;
       background: linear-gradient(90deg, var(--royal), var(--gold));
+    }
+    .modal-box.bsky-modal::before {
+      background: linear-gradient(90deg, var(--bsky-mid), var(--bsky), #00c6ff);
     }
 
     .modal-header {
@@ -416,6 +429,179 @@
       cursor: pointer; transition: background .2s;
     }
     .reveal-btn:hover { background: #f5d0d8; }
+
+    /* ── Bluesky Modal Specific Styles ── */
+    .bsky-bridge-box {
+      background: var(--bsky-mist);
+      border: 1px solid var(--bsky-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+    .bsky-bridge-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--bsky-mid);
+      margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .bsky-bridge-label::before { content: ''; display:inline-block; width:8px;height:8px;border-radius:50%;background:var(--bsky); }
+    .bsky-did-row {
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bsky-did-text {
+      font-family: 'DM Mono', 'Menlo', monospace;
+      font-size: 11.5px; color: #003f7d;
+      word-break: break-all; flex: 1;
+    }
+    .bsky-copy-btn {
+      font-size: 10px; padding: 2px 8px;
+      background: var(--bsky-light); color: var(--bsky-mid);
+      border: 1px solid var(--bsky-border); border-radius: 5px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500;
+      transition: background .15s; white-space: nowrap; flex-shrink: 0;
+    }
+    .bsky-copy-btn:hover { background: #c0e0ff; }
+
+    .bsky-arrow {
+      text-align: center; font-size: 16px; color: var(--text-muted);
+      margin: 6px 0 4px; line-height: 1;
+    }
+    .bsky-polygon-ref {
+      font-family: 'DM Mono', 'Menlo', monospace;
+      font-size: 10.5px; color: var(--text-muted);
+      margin-top: 6px; word-break: break-all;
+    }
+
+    .bsky-divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 16px 0;
+    }
+    .bsky-divider-line { flex: 1; height: 1px; background: var(--border-soft); }
+    .bsky-divider-text { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+    .bsky-field { margin-bottom: 14px; }
+    .bsky-field label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: var(--text-mid); letter-spacing: .45px;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .bsky-field input {
+      width: 100%;
+      background: var(--ivory);
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px; color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .bsky-field input:focus {
+      border-color: var(--bsky);
+      box-shadow: 0 0 0 3px rgba(0,133,255,.1);
+      background: #fff;
+    }
+    .bsky-field input::placeholder { color: var(--text-muted); }
+    .bsky-hint {
+      font-size: 10.5px; color: var(--text-muted); margin-top: 4px;
+      font-weight: 300;
+    }
+
+    .bsky-connect-btn {
+      width: 100%; padding: 12px;
+      background: var(--bsky); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, box-shadow .2s, transform .15s;
+      box-shadow: 0 4px 16px rgba(0,133,255,.3);
+      position: relative; letter-spacing: .1px;
+    }
+    .bsky-connect-btn:hover:not(:disabled) {
+      background: var(--bsky-mid);
+      box-shadow: 0 6px 22px rgba(0,133,255,.4);
+      transform: translateY(-1px);
+    }
+    .bsky-connect-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .bsky-connect-btn.loading { color: transparent !important; pointer-events: none; }
+    .bsky-connect-btn.loading::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      width: 18px; height: 18px; margin: -9px 0 0 -9px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .bsky-alert {
+      display: none; padding: 10px 13px;
+      border-radius: 9px; font-size: 12.5px;
+      margin-bottom: 14px; line-height: 1.5;
+      gap: 8px; align-items: flex-start;
+    }
+    .bsky-alert.show { display: flex; }
+    .bsky-alert.err { background: var(--rose-light); border: 1px solid rgba(192,80,106,.2); color: #8b2a40; }
+    .bsky-alert.ok  { background: #e6f9f2; border: 1px solid #a8e4cc; color: #1a7a5e; }
+
+    /* Connected state */
+    .bsky-profile-card {
+      display: none;
+      background: linear-gradient(135deg, #f0f8ff 0%, #e8f4ff 100%);
+      border: 1.5px solid var(--bsky-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    .bsky-profile-card.show { display: block; }
+
+    .bsky-profile-top {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 14px;
+    }
+    .bsky-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--bsky-mid), var(--bsky));
+      color: #fff; font-size: 18px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+      border: 2px solid rgba(0,133,255,.2);
+    }
+    .bsky-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .bsky-profile-info {}
+    .bsky-display-name { font-weight: 600; font-size: 15px; color: var(--text); }
+    .bsky-handle { font-size: 12px; color: var(--bsky-mid); font-weight: 500; margin-top: 2px; }
+    .bsky-followers { font-size: 11px; color: var(--text-soft); margin-top: 4px; }
+
+    .bsky-link-proof {
+      background: #fff; border: 1px solid var(--bsky-border);
+      border-radius: 9px; padding: 10px 12px;
+    }
+    .bsky-link-proof-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .bsky-link-row {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: 'DM Mono', 'Menlo', monospace;
+      color: var(--text-soft); word-break: break-all;
+    }
+    .bsky-link-row .chain-icon { font-size: 13px; flex-shrink: 0; }
+
+    .bsky-disconnect-btn {
+      width: 100%; padding: 9px;
+      background: none; color: var(--rose);
+      border: 1.5px solid rgba(192,80,106,.3);
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+      margin-top: 14px;
+    }
+    .bsky-disconnect-btn:hover { background: var(--rose-light); }
+
+    /* Panels inside modal */
+    .bsky-panel { display: none; }
+    .bsky-panel.active { display: block; }
 
     /* ── Footer note ── */
     .home-footer-note {
@@ -551,6 +737,17 @@
         <span class="app-status status-soon"><div class="app-status-dot"></div>Coming Soon</span>
       </div>
 
+      <!-- ── BLUESKY CARD (NEW) ── -->
+      <div class="app-card interactive" data-app="bluesky" id="bsky-card" onclick="openBskyModal()">
+        <div class="app-icon-wrap">🦋</div>
+        <div class="app-name">Bluesky</div>
+        <div class="app-desc">Bridge your Emberveil DID to Bluesky via did:web. One sovereign identity across the open social web.</div>
+        <span class="app-status status-connect" id="bsky-card-badge">
+          <div class="app-status-dot"></div>
+          <span id="bsky-card-status-text">Connect</span>
+        </span>
+      </div>
+
       <div class="app-card" data-app="more" style="opacity:.5">
         <div class="app-icon-wrap">＋</div>
         <div class="app-name">More apps</div>
@@ -568,7 +765,7 @@
 
 
   <!-- ================================================================
-     MODALS
+     MODALS (original)
      ================================================================ -->
 
   <!-- Account modal -->
@@ -683,9 +880,116 @@
   </div>
 
 
+  <!-- ================================================================
+     BLUESKY MODAL (NEW)
+     ================================================================ -->
+  <div class="modal-overlay" id="modal-bluesky">
+    <div class="modal-box bsky-modal" style="max-width:520px">
+      <div class="modal-header">
+        <span class="modal-title">🦋 Bluesky Identity Bridge</span>
+        <button class="modal-close" onclick="closeModal('modal-bluesky')">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- ── Panel: Connect ── -->
+        <div class="bsky-panel active" id="bsky-panel-connect">
+
+          <!-- DID Bridge box -->
+          <div class="bsky-bridge-box">
+            <div class="bsky-bridge-label">Your did:web Bridge Address</div>
+            <div class="bsky-did-row">
+              <span class="bsky-did-text" id="bsky-web-did">—</span>
+              <button class="bsky-copy-btn" onclick="copyBskyDid()">Copy</button>
+            </div>
+            <div class="bsky-arrow">↕</div>
+            <div class="bsky-polygon-ref" id="bsky-polygon-ref">did:polygon:0x…</div>
+            <div style="font-size:10.5px;color:#0057b8;margin-top:8px;font-weight:300;">
+              Your Polygon DID is bridged to Bluesky's AT Protocol via this did:web URL. No new keys — same Ed25519 keypair.
+            </div>
+          </div>
+
+          <!-- Error/success alert -->
+          <div class="bsky-alert err" id="bsky-alert">
+            <span>⚠</span>
+            <span id="bsky-alert-text"></span>
+          </div>
+
+          <div class="bsky-divider">
+            <div class="bsky-divider-line"></div>
+            <span class="bsky-divider-text">Sign in with your Bluesky account</span>
+            <div class="bsky-divider-line"></div>
+          </div>
+
+          <div class="bsky-field">
+            <label>Bluesky Handle</label>
+            <input type="text" id="bsky-handle" placeholder="yourname.bsky.social">
+            <div class="bsky-hint">Your full Bluesky handle, e.g. yourname.bsky.social</div>
+          </div>
+
+          <div class="bsky-field">
+            <label>App Password</label>
+            <input type="password" id="bsky-apppass" placeholder="xxxx-xxxx-xxxx-xxxx"
+              onkeydown="if(event.key==='Enter')connectBluesky()">
+            <div class="bsky-hint">
+              Use an App Password — never your main password.
+              Create one at <strong>bsky.app → Settings → Privacy & Security → App Passwords</strong>
+            </div>
+          </div>
+
+          <button class="bsky-connect-btn" id="bsky-connect-btn" onclick="connectBluesky()">
+            Connect to Bluesky
+          </button>
+
+        </div>
+
+        <!-- ── Panel: Connected ── -->
+        <div class="bsky-panel" id="bsky-panel-connected">
+
+          <div class="bsky-alert ok show" style="margin-bottom:16px">
+            <span>✓</span>
+            <span>Bluesky identity linked to your Emberveil DID</span>
+          </div>
+
+          <div class="bsky-profile-card show" id="bsky-profile-card">
+            <div class="bsky-profile-top">
+              <div class="bsky-avatar" id="bsky-avatar-el">B</div>
+              <div class="bsky-profile-info">
+                <div class="bsky-display-name" id="bsky-display-name">—</div>
+                <div class="bsky-handle" id="bsky-handle-display">—</div>
+                <div class="bsky-followers" id="bsky-followers-display">—</div>
+              </div>
+            </div>
+
+            <div class="bsky-link-proof">
+              <div class="bsky-link-proof-label">Identity Link Proof</div>
+              <div class="bsky-link-row" style="margin-bottom:6px">
+                <span class="chain-icon">🦋</span>
+                <span id="bsky-proof-handle">—</span>
+              </div>
+              <div style="text-align:center;font-size:11px;color:var(--text-muted);margin:4px 0">↕ bridged via did:web</div>
+              <div class="bsky-link-row">
+                <span class="chain-icon">⬡</span>
+                <span id="bsky-proof-did">—</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="bsky-disconnect-btn" onclick="disconnectBluesky()">Disconnect Bluesky</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
   <script>
     // ================================================================
-    // MINIMAL SESSION UTILITIES (no crypto needed here)
+    // RELAY URL
+    // ================================================================
+    const RELAY = 'https://emberveil.onrender.com';
+
+    // ================================================================
+    // SESSION UTILITIES
     // ================================================================
     const AUTH_PAGE = 'authenticationUI.html';
 
@@ -713,7 +1017,7 @@
     }
 
     // ================================================================
-    // GUARD — redirect to auth if no session
+    // GUARD
     // ================================================================
     const _session = getSession();
     if (!_session) { window.location.href = AUTH_PAGE; }
@@ -731,29 +1035,23 @@
       const evmAddress = _session.evmAddress;
       const did        = _session.did || (local && local.didDocument && local.didDocument.id) || '';
       const evmPubKey  = (local && local.evmPublicKey) || '(re-login to view)';
-      const didPubKey  = (local && local.didPublicKey) || '';
       const didMulti   = (local && local.didPublicMultibase) || '';
       const didDoc     = (local && local.didDocument) || {};
       const vm         = didDoc.verificationMethod && didDoc.verificationMethod[0];
 
-      // Initials for avatar
       const initials = username.slice(0,2).toUpperCase();
       document.getElementById('profile-avatar').textContent = initials;
 
-      // Topbar DID pill — truncate nicely
       const shortDid = did.length > 26 ? did.slice(0,14) + '…' + did.slice(-8) : did;
       document.getElementById('topbar-did').textContent = shortDid;
 
-      // Dropdown
       document.getElementById('dropdown-handle').textContent = '@' + username;
       document.getElementById('dropdown-did').textContent = did.length > 42 ? did.slice(0,42) + '…' : did;
 
-      // Identity card
       document.getElementById('greeting-username').textContent = '@' + username + '.';
       document.getElementById('card-address').textContent = evmAddress;
       document.getElementById('card-did').textContent     = did;
 
-      // Account modal
       document.getElementById('acc-username').textContent = '@' + username;
       document.getElementById('acc-address').textContent  = evmAddress;
       document.getElementById('acc-did').textContent      = did;
@@ -761,18 +1059,37 @@
         day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
       });
 
-      // Private key modal
       document.getElementById('pk-evm').textContent = keys.evmPrivateKey || '(re-login to view)';
       document.getElementById('pk-did').textContent = keys.didPrivateKey  || '(re-login to view)';
       document.getElementById('pk-pub').textContent = evmPubKey;
 
-      // DID modal
       document.getElementById('did-id').textContent     = did;
       document.getElementById('did-pubkey').textContent = vm ? vm.publicKeyMultibase : didMulti;
       document.getElementById('did-vm').textContent     = vm ? vm.id : '';
       document.getElementById('did-aka').textContent    = didDoc.alsoKnownAs ? didDoc.alsoKnownAs.join(', ') : '';
 
       window._didDocForCopy = didDoc;
+
+      // Build the did:web bridge DID for this user
+      // Format: did:web:<relay-host>:users:<username>
+      // We strip the protocol from the RELAY URL
+      const relayHost = RELAY.replace(/^https?:\/\//, '');
+      const webDid = `did:web:${relayHost}:users:${username}`;
+      window._bskyWebDid = webDid;
+      window._currentDid = did;
+      window._currentUsername = username;
+
+      document.getElementById('bsky-web-did').textContent   = webDid;
+      document.getElementById('bsky-polygon-ref').textContent = did;
+
+      // Restore Bluesky connection state if saved
+      const bskyData = localStorage.getItem(`ev_bsky_${username}`);
+      if (bskyData) {
+        try {
+          const parsed = JSON.parse(bskyData);
+          restoreBskyState(parsed);
+        } catch {}
+      }
     })();
 
 
@@ -799,6 +1116,11 @@
         if (e.target === o) { o.classList.remove('open'); hidePrivKey(); }
       });
     });
+
+    function openBskyModal() {
+      document.getElementById('profile-dropdown').classList.remove('open');
+      document.getElementById('modal-bluesky').classList.add('open');
+    }
 
     function revealPrivKey() {
       document.getElementById('privkey-hidden').style.display = 'none';
@@ -832,6 +1154,12 @@
         navigator.clipboard.writeText(JSON.stringify(window._didDocForCopy, null, 2));
     }
 
+    function copyBskyDid() {
+      const text = document.getElementById('bsky-web-did').textContent;
+      const btn  = document.querySelector('.bsky-copy-btn');
+      copyText(text, btn);
+    }
+
     // ================================================================
     // LOGOUT
     // ================================================================
@@ -839,6 +1167,159 @@
       clearSession();
       document.getElementById('profile-dropdown').classList.remove('open');
       window.location.href = AUTH_PAGE;
+    }
+
+
+    // ================================================================
+    // ── BLUESKY INTEGRATION ──
+    // ================================================================
+    const BSKY_API = 'https://bsky.social/xrpc';
+
+    // Show/hide modal panels
+    function showBskyPanel(id) {
+      document.querySelectorAll('.bsky-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // Show error alert inside modal
+    function showBskyAlert(msg) {
+      const el = document.getElementById('bsky-alert');
+      document.getElementById('bsky-alert-text').textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    // Set button loading state
+    function setBskyLoading(loading) {
+      const btn = document.getElementById('bsky-connect-btn');
+      btn.classList.toggle('loading', loading);
+      btn.disabled = loading;
+    }
+
+    // ── Main connect flow ──────────────────────────────────────────────
+    async function connectBluesky() {
+      const handle  = document.getElementById('bsky-handle').value.trim();
+      const appPass = document.getElementById('bsky-apppass').value.trim();
+
+      if (!handle) { showBskyAlert('Please enter your Bluesky handle.'); return; }
+      if (!appPass) { showBskyAlert('Please enter your App Password.'); return; }
+
+      setBskyLoading(true);
+
+      try {
+        // Step 1: Authenticate with Bluesky
+        const sessionRes = await fetch(`${BSKY_API}/com.atproto.server.createSession`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: handle, password: appPass })
+        });
+
+        if (!sessionRes.ok) {
+          const err = await sessionRes.json().catch(() => ({}));
+          throw new Error(err.message || 'Authentication failed. Check your handle and App Password.');
+        }
+
+        const bskySession = await sessionRes.json();
+        const accessToken = bskySession.accessJwt;
+        const bskyDid     = bskySession.did;
+
+        // Step 2: Fetch profile
+        const profileRes = await fetch(
+          `${BSKY_API}/app.bsky.actor.getProfile?actor=${encodeURIComponent(bskySession.handle)}`,
+          { headers: { 'Authorization': `Bearer ${accessToken}` } }
+        );
+
+        const profile = profileRes.ok ? await profileRes.json() : {};
+
+        // Step 3: Save connection to localStorage (no sensitive data — just link proof)
+        const connectionData = {
+          bskyHandle:      bskySession.handle,
+          bskyDid:         bskyDid,
+          displayName:     profile.displayName || bskySession.handle,
+          avatar:          profile.avatar || null,
+          followersCount:  profile.followersCount || 0,
+          followsCount:    profile.followsCount || 0,
+          emberveilDid:    window._currentDid,
+          webDid:          window._bskyWebDid,
+          linkedAt:        Date.now()
+        };
+
+        localStorage.setItem(
+          `ev_bsky_${window._currentUsername}`,
+          JSON.stringify(connectionData)
+        );
+
+        // Step 4: Update UI
+        renderBskyConnected(connectionData);
+        updateBskyCard(true, bskySession.handle);
+
+      } catch (err) {
+        console.error('Bluesky connect error:', err);
+        showBskyAlert(err.message || 'Connection failed. Please try again.');
+      } finally {
+        setBskyLoading(false);
+      }
+    }
+
+    // ── Render connected state ──────────────────────────────────────────
+    function renderBskyConnected(data) {
+      const avatarEl = document.getElementById('bsky-avatar-el');
+
+      if (data.avatar) {
+        avatarEl.innerHTML = `<img src="${data.avatar}" alt="avatar">`;
+      } else {
+        avatarEl.textContent = (data.displayName || data.bskyHandle).charAt(0).toUpperCase();
+      }
+
+      document.getElementById('bsky-display-name').textContent =
+        data.displayName || data.bskyHandle;
+
+      document.getElementById('bsky-handle-display').textContent =
+        '@' + data.bskyHandle;
+
+      document.getElementById('bsky-followers-display').textContent =
+        `${data.followersCount.toLocaleString()} followers · ${data.followsCount.toLocaleString()} following`;
+
+      document.getElementById('bsky-proof-handle').textContent =
+        '@' + data.bskyHandle + ' (' + data.bskyDid + ')';
+
+      document.getElementById('bsky-proof-did').textContent =
+        data.emberveilDid;
+
+      showBskyPanel('bsky-panel-connected');
+    }
+
+    // ── Restore saved state ────────────────────────────────────────────
+    function restoreBskyState(data) {
+      renderBskyConnected(data);
+      updateBskyCard(true, data.bskyHandle);
+    }
+
+    // ── Update the card badge on the home grid ─────────────────────────
+    function updateBskyCard(connected, handle) {
+      const badge = document.getElementById('bsky-card-badge');
+      const text  = document.getElementById('bsky-card-status-text');
+
+      if (connected) {
+        badge.className = 'app-status status-connected';
+        text.textContent = handle ? '@' + handle.split('.')[0] : 'Connected';
+      } else {
+        badge.className = 'app-status status-connect';
+        text.textContent = 'Connect';
+      }
+    }
+
+    // ── Disconnect ──────────────────────────────────────────────────────
+    function disconnectBluesky() {
+      localStorage.removeItem(`ev_bsky_${window._currentUsername}`);
+      updateBskyCard(false);
+
+      // Reset form
+      document.getElementById('bsky-handle').value  = '';
+      document.getElementById('bsky-apppass').value = '';
+
+      // Go back to connect panel
+      showBskyPanel('bsky-panel-connect');
     }
   </script>
 </body>
