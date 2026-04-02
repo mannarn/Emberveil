@@ -48,9 +48,9 @@ const ABI = [
   "function isUsernameAvailable(string calldata username) external view returns (bool)",
   "function registeredUsernames(string calldata username) external view returns (bool)",
   "function isUserActive(string calldata username) external view returns (bool)",
-  "function registerUser(string calldata username, string calldata didDocument, string calldata ed25519PublicKey, bytes32 passwordDoubleHash) external",
+  "function registerUser(string calldata username, string calldata didDocument, string calldata ed25519PublicKey, string calldata passwordDoubleHash) external returns (bool)",  // ← string, not bytes32
   "function getEd25519PublicKey(string calldata username) external view returns (string)",
-  "function getUserProfile(string calldata username) external view returns (tuple(string didEmberveilDocument, string metadataCID, bool isActive, uint256 registrationTime))"
+  "function getUserProfile(string calldata username) external view returns (tuple(string didEmberveilDocument, string metadataCID, string ed25519PublicKey, string passwordDoubleHash, uint256 registrationTime, bool isActive))"  // ← also update this tuple, it was missing fields
 ];
 
 // ── Blockchain init ────────────────────────────────────────────────────────────
@@ -213,14 +213,11 @@ app.post('/api/register-user', async (req, res) => {
       blockNumber: receipt.blockNumber
     });
   } catch (err) {
-  console.error('register-user FULL:', err);  // log the whole error object, not just err.message
-  res.status(500).json({
-    error: err.message,
-    reason: err.reason,       // ethers revert reason
-    code: err.code,
-    data: err.data            // raw revert data if any
-  });
-}
+    console.error('register-user:', err.message);
+    res.status(500).json({
+      error: err.message.includes('insufficient') ? 'Relay wallet has insufficient funds.' : 'Registration failed.'
+    });
+  }
 });
 
 // ── Challenge-Response Sign-In ─────────────────────────────────────────────────
