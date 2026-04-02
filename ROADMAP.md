@@ -26,11 +26,8 @@ Build the decentralized infrastructure for self-sovereign identity — a world w
 - [ ] 50+ beta user testers
 - [ ] Performance benchmarking (gas costs, latency)
 - [ ] Password recovery flow implementation
-- [ ] Mobile browser testing
 
 **Milestones:**
-- First 100 users registered
-- Zero security incidents in 1M authentication attempts
 - <100ms average login latency
 - Contract gas optimization (target: <500k gas for register)
 
