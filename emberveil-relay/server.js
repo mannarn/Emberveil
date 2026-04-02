@@ -221,6 +221,7 @@ app.post('/api/register-user', async (req, res) => {
     data: err.data            // raw revert data if any
   });
 }
+});
 
 // ── Challenge-Response Sign-In ─────────────────────────────────────────────────
 
