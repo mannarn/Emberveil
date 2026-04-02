@@ -1,0 +1,1 @@
+"Emberveil identities are chain-native but not chain-isolated — users can bring their Emberveil DID into Bluesky today, with no new keypair and no new account."

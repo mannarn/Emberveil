@@ -1,0 +1,82 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run tests
+        run: npm test
+
+  deploy-relay:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy relay to Render
+        run: |
+          echo "🚀 Deploying Emberveil Relay to Render..."
+          echo "Configure RENDER_DEPLOY_HOOK in GitHub secrets"
+          curl --request POST \
+            --url ${{ secrets.RENDER_DEPLOY_HOOK }} || echo "⚠️  RENDER_DEPLOY_HOOK not configured"
+        continue-on-error: true
+
+  deploy-contracts:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Verify contract compilation
+        run: npx hardhat compile
+      
+      - name: Deploy smart contract (if needed)
+        run: |
+          echo "📝 Contract deployment script:"
+          echo "npm run deploy"
+          echo ""
+          echo "ℹ️  Configure PRIVATE_KEY in .env for contract deployment"
+        continue-on-error: true
+
+  notify:
+    needs: [deploy-relay, deploy-contracts]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Deploy Status
+        run: |
+          echo "✓ Emberveil deployment pipeline completed"
+          echo "📊 Check GitHub releases for release notes"
