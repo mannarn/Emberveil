@@ -12,7 +12,21 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(cors());
+
+// ── CORS configuration ─────────────────────────────────────────────────────────
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:8000',
+    'https://mannarn.github.io'  // GitHub Pages deployment
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // ── Config ─────────────────────────────────────────────────────────────────────
