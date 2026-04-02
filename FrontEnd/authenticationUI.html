@@ -543,7 +543,7 @@
     const RELAY = (() => {
       // Production: Render deployment
       if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.')) {
-        return 'https://emberveil-relay.onrender.com';  // ← Update with your Render URL
+        return 'https://emberveil.onrender.com';  // ← Update with your Render URL
       }
       // Local development
       return 'http://localhost:3001';  // ← Or port 8080 if using local relay
