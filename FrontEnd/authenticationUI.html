@@ -538,7 +538,16 @@
     // ================================================================
     // CONSTANTS
     // ================================================================
-    const RELAY = 'https://emberveil.onrender.com';
+    // Configure relay endpoint based on environment
+    // Update this URL to match your deployed relay server
+    const RELAY = (() => {
+      // Production: Render deployment
+      if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.')) {
+        return 'https://emberveil-relay.onrender.com';  // ← Update with your Render URL
+      }
+      // Local development
+      return 'http://localhost:3001';  // ← Or port 8080 if using local relay
+    })();
 
     // ================================================================
     // UTILITY HELPERS

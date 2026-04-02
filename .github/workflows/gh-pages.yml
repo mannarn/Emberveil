@@ -1,0 +1,54 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'FrontEnd/**'
+      - '.github/workflows/gh-pages.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Copy frontend to _site
+        run: |
+          mkdir -p _site
+          cp FrontEnd/* _site/
+          echo "✓ Frontend files copied to _site"
+          ls -la _site/
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '_site'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+      
+      - name: Deployment Summary
+        run: |
+          echo "✓ Emberveil Frontend deployed to GitHub Pages"
+          echo ""
+          echo "Frontend deployed at:"
+          echo "${{ steps.deployment.outputs.page_url }}"
+          echo ""
+          echo "Resources:"
+          echo "- Authentication UI: ${{ steps.deployment.outputs.page_url }}authenticationUI.html"
+          echo "- Home UI: ${{ steps.deployment.outputs.page_url }}homeUI.html"
