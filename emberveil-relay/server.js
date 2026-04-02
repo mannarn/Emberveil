@@ -34,7 +34,7 @@ app.use(express.json());
 const CONTRACT_ADDRESS  = process.env.CONTRACT_ADDRESS;
 const RPC_URL           = process.env.RPC_URL           || "https://rpc-amoy.polygon.technology";
 const RELAY_PRIVATE_KEY = process.env.RELAY_PRIVATE_KEY;
-const JWT_SECRET        = process.env.JWT_SECRET || "103f4efb09dc0633d51bbee519e3bd41a1a11532ba6f1363eb7e1a89f07139db80e688ddc6d78cc401876ddf828fe1bfff3aca1ea10ba3f4f58e762aa966e988";
+const JWT_SECRET        = process.env.JWT_SECRET;
 const PORT              = process.env.PORT || 8080;
 const NONCE_TTL_MS      = 5 * 60 * 1000; // 5 minutes
 
@@ -213,12 +213,14 @@ app.post('/api/register-user', async (req, res) => {
       blockNumber: receipt.blockNumber
     });
   } catch (err) {
-    console.error('register-user:', err.message);
-    res.status(500).json({
-      error: err.message.includes('insufficient') ? 'Relay wallet has insufficient funds.' : 'Registration failed.'
-    });
-  }
-});
+  console.error('register-user FULL:', err);  // log the whole error object, not just err.message
+  res.status(500).json({
+    error: err.message,
+    reason: err.reason,       // ethers revert reason
+    code: err.code,
+    data: err.data            // raw revert data if any
+  });
+}
 
 // ── Challenge-Response Sign-In ─────────────────────────────────────────────────
 
